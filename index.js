@@ -32,6 +32,7 @@ app.post('/login', login);
 
 app.post('/admin/add', admin.add);
 app.post('/admin/remove', admin.remove);
+
 app.post('/vote', vote);
 
 app.get('/view/:slug', view);
@@ -39,9 +40,8 @@ app.get('/view/:slug', view);
 app.post('/image', image.post);
 app.get('/image/:imageid', image.get);
 
-app.get('/all', list);
-
-app.get('/category/:categoryid', category);
+app.get('/list', list.all);
+app.get('/list/:categoryid', list.category);
 
 app.get('/404', error);
 

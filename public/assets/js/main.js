@@ -159,7 +159,7 @@ loadItems = (lastActive, isSearch) => {
     '</div><div class="slug">',
     '</div><div class="image">',
     '</div></div></div>'];
-    get("/all", (response)=>{
+    get("/list", (response)=>{
         $("#items").innerHTML = "";
         let arr = JSON.parse(response);
         let categories = {}
