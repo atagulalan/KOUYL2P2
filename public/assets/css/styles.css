@@ -659,6 +659,14 @@ svg {
   height: 74px;
 }
 
+.adminWrapper .admin .main .top .notify {
+  float: right;
+}
+
+.adminWrapper .admin .main .top .notify.active svg {
+  stroke: #4d7cfe;
+}
+
 .adminWrapper .admin .main .top div {
   width: 74px;
   height: 74px;

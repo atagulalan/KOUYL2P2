@@ -573,6 +573,14 @@ svg {
       transition:0.2s all;
       .top{
         height:74px;
+        .notify{
+          float:right;
+          &.active{
+            svg{
+              stroke:#4d7cfe;
+            }
+          }
+        }
         div{
           width:74px;
           height:74px;

@@ -42,6 +42,7 @@ function post(url, data, callback=()=>{}) {
     });
     XHR.open('POST', url);
     XHR.setRequestHeader('Content-Type', 'application/json');
+    XHR.setRequestHeader("Authorization",localStorage.getItem("restKey"))
     XHR.send(JSON.stringify(data));
 }
 
@@ -54,8 +55,20 @@ function get(url, callback=()=>{}) {
     XHR.send();
 }
 
+sendMessage = (slug,title,cb) => {
+    post("https://onesignal.com/api/v1/notifications", {
+        "app_id": localStorage.getItem("appKey"),
+        "included_segments": ["All"],
+        "data": {slug, title },
+        "headings": {"en":"Yeni haber!"},
+        "contents": {"en": title}
+    }, cb)
+}
+
 logout = () => {
     localStorage.setItem("token", "");
+    localStorage.setItem("appKey", "");
+    localStorage.setItem("restKey", "");
     window.location = "/"
 }
 
@@ -63,11 +76,14 @@ generateToken = () => {
     let name = $("#name").value;
     let pass = $("#pass").value;
     let err = $("#err");
-    post("/login", {name, pass}, (token)=>{
-        if(token==="3e9ad32afd8070e5e59d6b4b005bfef9561890a3"){
+    post("/login", {name, pass}, (res)=>{
+        res = JSON.parse(res);
+        if(res.token==="3e9ad32afd8070e5e59d6b4b005bfef9561890a3"){
             err.innerText = "Giriş başarısız."
         }else{
-            localStorage.setItem("token", token);
+            localStorage.setItem("token", res.token);
+            localStorage.setItem("appKey", res.appKey);
+            localStorage.setItem("restKey", res.restKey);
             window.location = "/admin"
         }
     });
@@ -352,6 +368,18 @@ adminOnload = function() {
                     slug
                 }, (res)=>{
                     $(".secondLeftBar").addClass("full");
+                    loadItems();
+                })
+            }
+        });
+
+        $("#notifyPost").addEventListener("click", function(){
+            if(changesMade && !window.confirm("Yaptığınız değişiklikleri kaydetmediniz. Bildirimde yaptığınız değişiklikler gözükmeyecek. Devam etmek istiyor musunuz?")) return false;
+            let slug = $(".item.active").length!==0 ? $(".item.active").attr("slug") : null;
+            let title = $(".item.active").length!==0 ? $(".item.active").find(".name").innerText : null;
+            if(slug){
+                sendMessage(slug, title, (res)=>{
+                    $("#notifyPost").addClass("active");
                     loadItems();
                 })
             }
