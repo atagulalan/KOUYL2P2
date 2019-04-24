@@ -1,7 +1,7 @@
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const path = require("path");
-const { login, admin, error, vote, view, image, list, category } = require("./src");
+const { login, admin, error, vote, view, image, list } = require("./src");
 const app = express();
 const port = 4540;
 
@@ -11,7 +11,7 @@ const adapter = new FileSync('database/db.json');
 const db = low(adapter);
 
 // Set some defaults (required if your JSON file is empty)
-db.defaults({ users: [], posts: [] }) 
+db.defaults({ users: [], posts: [], votes: [] }) 
   .write()
 
 // Parse JSON from body of the request
