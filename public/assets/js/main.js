@@ -380,7 +380,6 @@ adminOnload = function() {
             if(slug){
                 sendMessage(slug, title, (res)=>{
                     $("#notifyPost").addClass("active");
-                    loadItems();
                 })
             }
         });
