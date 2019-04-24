@@ -12,9 +12,14 @@ vote = (req,res) => {
     res.send("slug not defined");
     return false;
   }
+
+  if(!db.get('posts').find({ slug }).value()){
+    res.send("no posts found by that slug");
+    return false;
+  }
   
   //prepare post
-  if (!db.get('votes').find({ slug }).value() && db.get('posts').find({ slug }).value()) {
+  if (!db.get('votes').find({ slug }).value()) {
     db.get('votes').push({ slug: slug, voteCount:0, votes: []}).write();
   }
 
@@ -42,7 +47,16 @@ vote = (req,res) => {
     .update('voteCount', n => n + relativediff)
     .write();
 
-  res.send(votes);
+  let likeDiff = (relativediff===-1 && diff===0) || (relativediff===-2) ? -1 : (relativediff===1 && diff!==0) || (relativediff===+2) ? +1 : 0;
+  let dislikeDiff = (relativediff===-1 && diff!==0) || (relativediff===-2) ? +1 : (relativediff===1 && diff===0) || (relativediff===+2) ? -1 : 0;
+
+  db.get('posts')
+    .find({ slug })
+    .update('stats.like', n => n + likeDiff)
+    .update('stats.dislike', n => n + dislikeDiff)
+    .write();
+
+  res.send(db.get('posts').find({ slug }).get("stats").value());
 }
 
 module.exports = {
