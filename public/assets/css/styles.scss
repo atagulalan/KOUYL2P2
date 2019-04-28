@@ -1,90 +1,94 @@
-@import url('https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&subset=latin-ext,vietnamese');
+@import url("https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&subset=latin-ext,vietnamese");
 
-html, body{
-  font-family: 'Nunito', sans-serif;
+html,
+body {
+  font-family: "Nunito", sans-serif;
   color: #2e2f33;
-  background:#f8f9fa;
-  font-size:14pt;
-  overflow-x:hidden;
+  background: #f8f9fa;
+  font-size: 14pt;
+  overflow-x: hidden;
 }
 
-*, input, textarea{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family: 'Nunito', sans-serif;
-  cursor:default;
-  &:focus{
-    outline:0;
+*,
+input,
+textarea {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Nunito", sans-serif;
+  cursor: default;
+  &:focus {
+    outline: 0;
   }
 }
 
-input, textarea{
-  cursor:text;
+input,
+textarea {
+  cursor: text;
 }
 
-a{
+a {
   font-weight: 400;
   color: #228be6;
-  transition: all .3s;
+  transition: all 0.3s;
 }
 
-h1{
-  text-align:center;
-  font-weight:300;
-  color:#767792;
+h1 {
+  text-align: center;
+  font-weight: 300;
+  color: #767792;
 }
 
-label{
+label {
   display: inline-block;
   color: #adb5bd;
   width: 100%;
   text-transform: uppercase;
 }
 
-input{
+input {
   display: inline-block;
   margin: 0 20px 0 0;
   padding: 0;
-  border:none;
+  border: none;
   border-bottom: 1px solid #f1f3f5;
   background: #fff;
   width: 100%;
   color: #32325d;
   outline: 0;
   line-height: 32px;
-  font-size:12pt;
+  font-size: 12pt;
 }
 
-button{
+button {
   border-radius: 5px;
   line-height: 80px;
   background: #4d7cfe;
-  border:0;
+  border: 0;
   color: #fff;
   font-weight: 700;
-  font-size:13pt;
+  font-size: 13pt;
   margin: 0 8px;
   cursor: pointer;
-  transition: all .2s;
-  letter-spacing:0.2px;
+  transition: all 0.2s;
+  letter-spacing: 0.2px;
   & * {
-    cursor:pointer;
+    cursor: pointer;
   }
-  svg{
-    stroke:#b1cdfd;
-    width:22px;
-    height:22px;
-    margin-bottom:4px;
-    margin-right:5px;
+  svg {
+    stroke: #b1cdfd;
+    width: 22px;
+    height: 22px;
+    margin-bottom: 4px;
+    margin-right: 5px;
   }
-  &:hover{
+  &:hover {
     background: #4774f1;
   }
-  &.gray{
+  &.gray {
     background: #edecf1;
     color: #9f9fa7;
-    &:hover{
+    &:hover {
       background: #e8e6ec;
     }
   }
@@ -101,7 +105,7 @@ svg {
   vertical-align: middle;
 }
 
-.err{
+.err {
   display: block;
   text-align: center;
   margin-top: 12px;
@@ -110,148 +114,150 @@ svg {
   color: #fe4f4c;
 }
 
-.inputWrapper{
-  margin:16px 8px 24px;
+.inputWrapper {
+  margin: 16px 8px 24px;
 }
 
-.loginWrapper{
+.loginWrapper {
   width: 100vw;
-  height:100vh;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  
-  .login{
+
+  .login {
     width: 440px;
     background: #fff;
     border-radius: 5px;
     padding: 24px;
     margin: 20px;
-    box-shadow: 0px 3px 60px -6px rgba(0,0,0,0.1);
-    h1{
-      font-weight:900;
-      margin:10px 0 40px;
+    box-shadow: 0px 3px 60px -6px rgba(0, 0, 0, 0.1);
+    h1 {
+      font-weight: 900;
+      margin: 10px 0 40px;
     }
-    button{
-      margin:10px 8px 20px;
+    button {
+      margin: 10px 8px 20px;
       width: calc(100% - 16px);
-      font-size:16pt;
-      svg{
-        width:32px;
-        height:32px;
+      font-size: 16pt;
+      svg {
+        width: 32px;
+        height: 32px;
       }
     }
   }
 }
 
-.adminWrapper{
+.adminWrapper {
   width: 100vw;
-  height:100vh;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  #categoriesModal{
-    &.noTouch{
-      .modalInner .inner ul li{
-        cursor:default;
-        &.active, &:hover{
-          background:transparent;
+  #categoriesModal {
+    &.noTouch {
+      .modalInner .inner ul li {
+        cursor: default;
+        &.active,
+        &:hover {
+          background: transparent;
           border-bottom: 1px solid #f5f6f8;
         }
       }
-      button{
-        &.gray, &#createCategory{
-          display:inline-block;
+      button {
+        &.gray,
+        &#createCategory {
+          display: inline-block;
         }
-        display:none;
+        display: none;
       }
     }
   }
-  .modal{
-    position:fixed;
-    left:0;
-    top:0;
+  .modal {
+    position: fixed;
+    left: 0;
+    top: 0;
     width: 100vw;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index:-123;
-    background:rgba(255,255,255,0);
-    transition:0.2s background;
-    &.active{
-      z-index:123;
-      background:rgba(255,255,255,0.7);
-      & + .admin{
-        filter:blur(3px);
+    z-index: -123;
+    background: rgba(255, 255, 255, 0);
+    transition: 0.2s background;
+    &.active {
+      z-index: 123;
+      background: rgba(255, 255, 255, 0.7);
+      & + .admin {
+        filter: blur(3px);
       }
-      .modalInner{
-        transform:translateY(0px);
-        opacity:1;
+      .modalInner {
+        transform: translateY(0px);
+        opacity: 1;
       }
     }
-    .modalInner{
+    .modalInner {
       width: 440px;
       background: #fff;
       border-radius: 5px;
       padding: 24px 0;
       margin: 20px;
       box-shadow: 0px 3px 60px -6px rgba(0, 0, 0, 0.1);
-      transform:translateY(50px);
-      opacity:0;
-      transition:0.2s all;
-      .bottom{
-        text-align:right;
+      transform: translateY(50px);
+      opacity: 0;
+      transition: 0.2s all;
+      .bottom {
+        text-align: right;
         padding: 0 24px;
       }
-      .inner{
-        margin:20px 0;
-        height:200px;
+      .inner {
+        margin: 20px 0;
+        height: 200px;
         border-top: 2px solid #f5f6f8;
         overflow: auto;
-        .addCategory{
+        .addCategory {
           height: 50px;
           border-bottom: 1px solid #f5f6f8;
           overflow: hidden;
           position: relative;
-          input{
+          input {
             line-height: 50px;
             padding: 0 20px;
             font-size: 14pt;
             cursor: text;
-            &::placeholder { 
+            &::placeholder {
               color: #4d7cfe;
-              opacity:1;
-              transition:0.2s opacity;
+              opacity: 1;
+              transition: 0.2s opacity;
             }
-            &:focus::placeholder{
-              opacity:0;
+            &:focus::placeholder {
+              opacity: 0;
             }
-            &:valid + button{
+            &:valid + button {
               right: 5px;
             }
           }
-          button{
-            transition:0.2s all;
-            top:5px;
-            right:-100px;
-            position:absolute;
+          button {
+            transition: 0.2s all;
+            top: 5px;
+            right: -100px;
+            position: absolute;
           }
         }
-        ul{
+        ul {
           list-style: none;
           li {
             line-height: 50px;
             border-bottom: 1px solid #f5f6f8;
             padding-left: 20px;
-            cursor:pointer;
-            transition:0.2s all;
-            &:hover{
-              background:#f8faff;
+            cursor: pointer;
+            transition: 0.2s all;
+            &:hover {
+              background: #f8faff;
               border-bottom: 1px solid #f8faff;
             }
-            &.active{
-              background:#e8efff;
+            &.active {
+              background: #e8efff;
               border-bottom: 1px solid #e8efff;
             }
           }
@@ -266,152 +272,177 @@ svg {
       }
     }
   }
-  .admin{
+  .admin {
     width: 100vw;
-    min-height:100vh;
-    transition:0.2s filter;
+    min-height: 100vh;
+    transition: 0.2s filter;
     .leftBar {
-      width:350px;
+      width: 350px;
       background: white;
       height: 100vh;
       position: fixed;
-      box-shadow: -3px 0 30px 0px rgba(0,0,0,0.1);
+      box-shadow: -3px 0 30px 0px rgba(0, 0, 0, 0.1);
       z-index: 2;
-      &.small{
-        width:65px;
-        overflow:hidden;
-        .logo{
+      &.small {
+        width: 65px;
+        overflow: hidden;
+        .logo {
           padding: 20px 10px;
           font-size: 20pt;
         }
-        .leftInner{
+        .leftInner {
           width: 350px;
-          button{
+          button {
             height: 50px;
             margin: 0 7.5px;
             width: 50px;
             border-radius: 50%;
-            svg{
+            svg {
               margin-bottom: 11px;
-              margin-right:0;
+              margin-right: 0;
             }
           }
-          ul li{
+          ul li {
             padding: 10px 19px;
           }
         }
-        & + .secondLeftBar{
-          left:65px;
-          &.full{
-            width:calc(100vw - 65px);
-            left:65px;
+        & + .secondLeftBar {
+          left: 65px;
+          &.full {
+            width: calc(100vw - 65px);
+            left: 65px;
           }
-          & + .main{
-            width:calc(100vw - 515px);
+          & + .main {
+            width: calc(100vw - 515px);
             left: 515px;
           }
         }
       }
-      .logo{
-        padding:15px 50px;
+      .logo {
+        padding: 15px 50px;
         /*https://www.cssmatic.com/gradient-generator#'\-moz\-linear\-gradient\%28top\%2C\%20rgba\%2830\%2C150\%2C255\%2C1\%29\%200\%25\%2C\%20rgba\%2838\%2C121\%2C254\%2C1\%29\%20100\%25\%29\%3B'*/
-        background: rgba(30,150,255,1);
-        background: -moz-linear-gradient(top, rgba(30,150,255,1) 0%, rgba(38,121,254,1) 100%);
-        background: -webkit-gradient(left top, left bottom, color-stop(0%, rgba(30,150,255,1)), color-stop(100%, rgba(38,121,254,1)));
-        background: -webkit-linear-gradient(top, rgba(30,150,255,1) 0%, rgba(38,121,254,1) 100%);
-        background: -o-linear-gradient(top, rgba(30,150,255,1) 0%, rgba(38,121,254,1) 100%);
-        background: -ms-linear-gradient(top, rgba(30,150,255,1) 0%, rgba(38,121,254,1) 100%);
-        background: linear-gradient(to bottom, rgba(30,150,255,1) 0%, rgba(38,121,254,1) 100%);
+        background: rgba(30, 150, 255, 1);
+        background: -moz-linear-gradient(
+          top,
+          rgba(30, 150, 255, 1) 0%,
+          rgba(38, 121, 254, 1) 100%
+        );
+        background: -webkit-gradient(
+          left top,
+          left bottom,
+          color-stop(0%, rgba(30, 150, 255, 1)),
+          color-stop(100%, rgba(38, 121, 254, 1))
+        );
+        background: -webkit-linear-gradient(
+          top,
+          rgba(30, 150, 255, 1) 0%,
+          rgba(38, 121, 254, 1) 100%
+        );
+        background: -o-linear-gradient(
+          top,
+          rgba(30, 150, 255, 1) 0%,
+          rgba(38, 121, 254, 1) 100%
+        );
+        background: -ms-linear-gradient(
+          top,
+          rgba(30, 150, 255, 1) 0%,
+          rgba(38, 121, 254, 1) 100%
+        );
+        background: linear-gradient(
+          to bottom,
+          rgba(30, 150, 255, 1) 0%,
+          rgba(38, 121, 254, 1) 100%
+        );
         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1e96ff', endColorstr='#2679fe', GradientType=0 );
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        font-size:24pt;
-        font-weight:900;
-        margin:0;
-        height:74px;
+        font-size: 24pt;
+        font-weight: 900;
+        margin: 0;
+        height: 74px;
       }
-      hr{
-        width:100%;
-        border:none;
-        height:2px;
-        background:#f5f6f8;
+      hr {
+        width: 100%;
+        border: none;
+        height: 2px;
+        background: #f5f6f8;
       }
-      .leftInner{
-        margin-top:50px;
-        button{
-          width:calc(100% - 100px);
-          height:60px;
-          line-height:60px;
-          margin:0 50px;
+      .leftInner {
+        margin-top: 50px;
+        button {
+          width: calc(100% - 100px);
+          height: 60px;
+          line-height: 60px;
+          margin: 0 50px;
         }
-        ul{
+        ul {
           list-style: none;
-          margin-top:50px;
-          li{
-            border-left:3px solid transparent;
-            padding:10px 50px;
-            font-weight:600;
-            margin:20px 0;
-            cursor:pointer;
-            transition:0.2s all;
+          margin-top: 50px;
+          li {
+            border-left: 3px solid transparent;
+            padding: 10px 50px;
+            font-weight: 600;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: 0.2s all;
             & * {
-              cursor:pointer;
+              cursor: pointer;
             }
-            svg{
-              width:28px;
-              height:28px;
-              margin-right:10px;
-              margin-bottom:3px;
-              stroke:#c5c6cb;
-              transition:0.2s all;
+            svg {
+              width: 28px;
+              height: 28px;
+              margin-right: 10px;
+              margin-bottom: 3px;
+              stroke: #c5c6cb;
+              transition: 0.2s all;
             }
-            .number{
-              float:right;
-              border:1px solid #f1f2f7;
-              border-radius:50px;
-              color:#a3a8b3;
-              padding:2px 15px;
-              font-size:11pt;
-              transition:0.2s all;
-              vertical-align:middle;
-              &:empty{
-                display:none;
+            .number {
+              float: right;
+              border: 1px solid #f1f2f7;
+              border-radius: 50px;
+              color: #a3a8b3;
+              padding: 2px 15px;
+              font-size: 11pt;
+              transition: 0.2s all;
+              vertical-align: middle;
+              &:empty {
+                display: none;
               }
             }
-            &.active, &:hover{
-              svg{
-                stroke:#b3cefe;
+            &.active,
+            &:hover {
+              svg {
+                stroke: #b3cefe;
               }
-              .number{
-                color:#5687ff;
+              .number {
+                color: #5687ff;
               }
-              color:#4f82ff
+              color: #4f82ff;
             }
-            &.active{
-              border-left:3px solid #7da5fc;
+            &.active {
+              border-left: 3px solid #7da5fc;
             }
           }
         }
       }
     }
-    .secondLeftBar{
+    .secondLeftBar {
       position: fixed;
       width: 450px;
       left: 350px;
       height: 100vh;
-      transition:0.2s all;
+      transition: 0.2s all;
       z-index: 1;
       background: #f8f9fa;
       &.full {
         width: calc(100vw - 350px);
-        
       }
-      .top{
-        height:74px;
-        text-align:right;
-        overflow:hidden;
-        border-right:1px solid #edeef1;
-        input{
+      .top {
+        height: 74px;
+        text-align: right;
+        overflow: hidden;
+        border-right: 1px solid #edeef1;
+        input {
           width: 100%;
           margin: 0;
           left: 0;
@@ -424,90 +455,90 @@ svg {
           cursor: text;
           padding: 25px;
         }
-        & *{
-          cursor:pointer;
+        & * {
+          cursor: pointer;
         }
-        div{
-          width:74px;
-          height:74px;
-          display:inline-block;
-          position:relative;
-          z-index:2;
-          &:hover{
-            svg{
-              stroke:#aaa;
+        div {
+          width: 74px;
+          height: 74px;
+          display: inline-block;
+          position: relative;
+          z-index: 2;
+          &:hover {
+            svg {
+              stroke: #aaa;
             }
           }
-          svg{
-            width:28px;
-            height:28px;
-            margin:23px;
-            transition:0.2s all;
-            cursor:pointer;
+          svg {
+            width: 28px;
+            height: 28px;
+            margin: 23px;
+            transition: 0.2s all;
+            cursor: pointer;
           }
         }
       }
-      .filter{
+      .filter {
         padding: 10px 15px;
         height: 64px;
         overflow: hidden;
-        color:#a4a8b3;
-        font-weight:600;
-        border-right:1px solid #edeef1;
-        border-bottom:1px solid #edeef1;
-        cursor:pointer;
-        transition:0.2s all;
-        & *{
-          cursor:pointer;
+        color: #a4a8b3;
+        font-weight: 600;
+        border-right: 1px solid #edeef1;
+        border-bottom: 1px solid #edeef1;
+        cursor: pointer;
+        transition: 0.2s all;
+        & * {
+          cursor: pointer;
         }
-        &:hover{
-          svg{
-            stroke:#aaa;
+        &:hover {
+          svg {
+            stroke: #aaa;
           }
-          color:#888;
+          color: #888;
         }
-        &.active .image svg{
-          transform:rotateZ(180deg);
+        &.active .image svg {
+          transform: rotateZ(180deg);
         }
-        .image{
-          width:44px;
-          height:44px;
-          display:inline-block;
+        .image {
+          width: 44px;
+          height: 44px;
+          display: inline-block;
           vertical-align: middle;
-          svg{
-            width:28px;
-            height:28px;
-            transition:0.2s all;
-            margin:6px 8px 8px;
+          svg {
+            width: 28px;
+            height: 28px;
+            transition: 0.2s all;
+            margin: 6px 8px 8px;
           }
-        } 
+        }
       }
-      hr{
-        width:100%;
-        border:none;
-        height:2px;
-        background:#edeef1;
+      hr {
+        width: 100%;
+        border: none;
+        height: 2px;
+        background: #edeef1;
       }
-      .secondLeftInner{
-        overflow:auto;
-        height:calc(100vh - 138px);
+      .secondLeftInner {
+        overflow: auto;
+        height: calc(100vh - 138px);
         .item {
           width: 100%;
           height: 130px;
-          transition:0.2s all;
-          &:hover{
+          transition: 0.2s all;
+          &:hover {
             background: #f4f4f4;
           }
-          &.active{
+          &.active {
             background: white;
-            border-right:1px solid #fff;
+            border-right: 1px solid #fff;
           }
           padding: 40px 25px;
-          border-right:1px solid #edeef1;
-          border-bottom:1px solid #edeef1;
-          cursor:pointer;
-          & *{
-            cursor:pointer;
+          border-right: 1px solid #edeef1;
+          border-bottom: 1px solid #edeef1;
+          cursor: pointer;
+          & * {
+            cursor: pointer;
           }
           .name {
             font-size: 15pt;
@@ -526,103 +557,112 @@ svg {
               display: block;
               text-overflow: ellipsis;
               width: 70%;
-              float:left;
+              float: left;
             }
-            .date {
+            .humanDate {
               display: block;
               float: right;
             }
-            .tags, .slug, .image{
-              display:none;
+            .tags,
+            .slug,
+            .image,
+            .date {
+              display: none;
             }
           }
         }
-        .adder{
-          padding:40px;
-          .button{
+        .adder {
+          padding: 40px;
+          .button {
             width: 60px;
             height: 60px;
             background: #4d7cfe;
             border-radius: 50%;
-            margin:0 auto;
-            cursor:pointer;
-            transition:0.2s all;
-            &:hover{
+            margin: 0 auto;
+            cursor: pointer;
+            transition: 0.2s all;
+            &:hover {
               background: #4774f1;
             }
             & * {
-              cursor:pointer;
+              cursor: pointer;
             }
-            svg{
-              width:32px;
-              height:32px;
-              margin:14px;
-              stroke:#fff;
+            svg {
+              width: 32px;
+              height: 32px;
+              margin: 14px;
+              stroke: #fff;
             }
           }
         }
       }
     }
-    .main{
-      width:calc(100vw - 800px);
-      height:100vh;
-      position:fixed;
-      top:0;
-      left:800px;
-      background:white;
-      transition:0.2s all;
-      .top{
-        height:74px;
-        .notify{
-          float:right;
-          &.active{
-            svg{
-              stroke:#4d7cfe;
+    .main {
+      width: calc(100vw - 800px);
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 800px;
+      background: white;
+      transition: 0.2s all;
+      .top {
+        height: 74px;
+        .notify {
+          float: right;
+          &.active {
+            svg {
+              stroke: #4d7cfe;
             }
           }
         }
-        div{
-          width:74px;
-          height:74px;
-          display:inline-block;
-          position:relative;
-          z-index:2;
-          cursor:pointer;
+        div {
+          width: 74px;
+          height: 74px;
+          display: inline-block;
+          position: relative;
+          z-index: 2;
+          cursor: pointer;
           & * {
-            cursor:pointer;
+            cursor: pointer;
           }
-          &:hover{
-            svg{
-              stroke:#aaa;
+          &:hover {
+            svg {
+              stroke: #aaa;
             }
           }
-          svg{
-            width:28px;
-            height:28px;
-            margin:23px;
-            transition:0.2s all;
-            cursor:pointer;
+          svg {
+            width: 28px;
+            height: 28px;
+            margin: 23px;
+            transition: 0.2s all;
+            cursor: pointer;
           }
         }
       }
-      hr{
-        width:100%;
-        border:none;
-        height:2px;
-        background:#f5f6f8;
+      hr {
+        width: 100%;
+        border: none;
+        height: 2px;
+        background: #f5f6f8;
       }
       .innerMain {
         width: 800px;
-        height:calc(100vh - 76px);
-        padding-bottom:100px;
+        height: calc(100vh - 76px);
+        padding-bottom: 100px;
         margin: 0 auto;
-        overflow:auto;
-        .desc{
-          margin-top:74px;
-          color:#a4a8b3;
+        overflow: auto;
+        .desc {
+          margin-top: 74px;
+          color: #a4a8b3;
+          #date input{
+            color: #a4a8b3;
+            font-family: 'Nunito';
+            font-size: 14pt;
+            border: none;
+          }
         }
-        #slug{
-          display:none;
+        #slug {
+          display: none;
         }
         /*https://stackoverflow.com/questions/425274/prevent-line-paragraph-breaks-in-contenteditable*/
         h1 {
@@ -630,17 +670,17 @@ svg {
           color: #585858;
           font-weight: 700;
           margin: 10px 0 20px;
-          font-size:44pt;
-          cursor:text;
-          &:empty::before{
-            content:attr(placeholder);
+          font-size: 44pt;
+          cursor: text;
+          &:empty::before {
+            content: attr(placeholder);
             color: #e2e2e2;
           }
           & * {
             display: inline;
           }
           & br {
-            display:none;
+            display: none;
           }
         }
         .tags {
@@ -661,22 +701,22 @@ svg {
             margin: 0 10px 0 0;
             border-radius: 5px;
             border: 1px solid #d7e2ff;
-            margin-bottom:5px;
-            color:#4f7ffe;
+            margin-bottom: 5px;
+            color: #4f7ffe;
             .remove {
               display: inline-block;
               width: 28px;
               height: 42px;
               margin: 0px 0;
-              cursor:pointer;
+              cursor: pointer;
               & * {
-                cursor:pointer;
+                cursor: pointer;
               }
-              svg{
-                width:14px;
-                height:14px;
-                stroke:#4f7ffe;
-                margin-bottom:2px;
+              svg {
+                width: 14px;
+                height: 14px;
+                stroke: #4f7ffe;
+                margin-bottom: 2px;
               }
             }
           }
@@ -684,7 +724,7 @@ svg {
             width: 44px;
             background: #f5f6fa;
             height: 44px;
-            float: left; 
+            float: left;
             line-height: 44px;
             margin: 0 10px 0 0;
             border-radius: 5px;
@@ -692,22 +732,22 @@ svg {
             color: #aeb1bb;
             text-align: center;
             cursor: pointer;
-            transition:0.2s all;
-            &:hover{
+            transition: 0.2s all;
+            &:hover {
               background: #f0f2fb;
             }
           }
-        } 
-        .content{
-          &:empty::before{
-            content:attr(placeholder);
+        }
+        .content {
+          &:empty::before {
+            content: attr(placeholder);
             color: #e2e2e2;
           }
           min-height: 300px;
-          cursor:text;
+          cursor: text;
           white-space: pre-wrap;
           & * {
-            cursor:text;
+            cursor: text;
           }
         }
         .imageWrapper {
@@ -717,7 +757,7 @@ svg {
           position: relative;
           border: 2px solid #f8f9fa;
           margin-top: 20px;
-          .remove{
+          .remove {
             display: block;
             width: 30px;
             height: 30px;
@@ -727,21 +767,21 @@ svg {
             top: 10px;
             border-radius: 50%;
             z-index: 5;
-            cursor:pointer;
+            cursor: pointer;
             & * {
-              cursor:pointer;
+              cursor: pointer;
             }
-            svg{
+            svg {
               width: 20px;
               height: 20px;
               margin: 5px;
-              transition:0.2s all;
+              transition: 0.2s all;
             }
-            &:hover svg{
-              stroke: #F44336;
+            &:hover svg {
+              stroke: #f44336;
             }
           }
-          span{
+          span {
             height: 200px;
             width: 200px;
             text-align: center;
@@ -751,8 +791,8 @@ svg {
             position: absolute;
             left: 0;
             top: 0;
-            z-index:-1;
-            color:#ccc;
+            z-index: -1;
+            color: #ccc;
           }
           input {
             width: 500%;
@@ -770,13 +810,13 @@ svg {
             background: white;
           }
         }
-        button{
+        button {
           line-height: 40px;
           height: 40px;
           padding: 0 30px;
           margin: 40px 0 0;
           float: left;
-          &:disabled{
+          &:disabled {
             background: #edecf1;
             color: #9f9fa7;
           }
@@ -786,6 +826,14 @@ svg {
   }
 }
 
-::-webkit-scrollbar{width:17px}
-::-webkit-scrollbar-track{box-shadow:inset 0 0 17px 17px rgba(0,0,0,.05);border:7px solid transparent}
-::-webkit-scrollbar-thumb{box-shadow:inset 0 0 17px 17px #999;border:7px solid transparent}
+::-webkit-scrollbar {
+  width: 17px;
+}
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 17px 17px rgba(0, 0, 0, 0.05);
+  border: 7px solid transparent;
+}
+::-webkit-scrollbar-thumb {
+  box-shadow: inset 0 0 17px 17px #999;
+  border: 7px solid transparent;
+}

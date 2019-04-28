@@ -1,32 +1,38 @@
 @import url("https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&subset=latin-ext,vietnamese");
-html, body {
-  font-family: 'Nunito', sans-serif;
+html,
+body {
+  font-family: "Nunito", sans-serif;
   color: #2e2f33;
   background: #f8f9fa;
   font-size: 14pt;
   overflow-x: hidden;
 }
 
-*, input, textarea {
+*,
+input,
+textarea {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Nunito', sans-serif;
+  font-family: "Nunito", sans-serif;
   cursor: default;
 }
 
-*:focus, input:focus, textarea:focus {
+*:focus,
+input:focus,
+textarea:focus {
   outline: 0;
 }
 
-input, textarea {
+input,
+textarea {
   cursor: text;
 }
 
 a {
   font-weight: 400;
   color: #228be6;
-  transition: all .3s;
+  transition: all 0.3s;
 }
 
 h1 {
@@ -66,7 +72,7 @@ button {
   font-size: 13pt;
   margin: 0 8px;
   cursor: pointer;
-  transition: all .2s;
+  transition: all 0.2s;
   letter-spacing: 0.2px;
 }
 
@@ -607,12 +613,15 @@ svg {
   float: left;
 }
 
-.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .date {
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .humanDate {
   display: block;
   float: right;
 }
 
-.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .tags, .adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .slug, .adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .image {
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .tags,
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .slug,
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .image,
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .date {
   display: none;
 }
 
@@ -711,6 +720,13 @@ svg {
 .adminWrapper .admin .main .innerMain .desc {
   margin-top: 74px;
   color: #a4a8b3;
+}
+
+.adminWrapper .admin .main .innerMain .desc #date input {
+  color: #a4a8b3;
+  font-family: 'Nunito';
+  font-size: 14pt;
+  border: none;
 }
 
 .adminWrapper .admin .main .innerMain #slug {
@@ -850,7 +866,7 @@ svg {
 }
 
 .adminWrapper .admin .main .innerMain .imageWrapper .remove:hover svg {
-  stroke: #F44336;
+  stroke: #f44336;
 }
 
 .adminWrapper .admin .main .innerMain .imageWrapper span {

@@ -7,5 +7,12 @@ const { image } = require("./image");
 const { list } = require("./list");
 
 module.exports = {
-  login, admin, error, vote, view, image, list, category
-}
+  login,
+  admin,
+  error,
+  vote,
+  view,
+  image,
+  list,
+  category
+};

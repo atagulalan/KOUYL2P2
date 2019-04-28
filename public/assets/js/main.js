@@ -149,12 +149,14 @@ addItemFunctionality = () => {
                 el.removeClass("active");
             });
             el.addClass("active");
+            $("#notifyPost").removeClass("active")
             $(".secondLeftBar").removeClass("full");
             $("#title").innerText = el.find(".name").innerText;
             $("#content").innerText = el.find(".content .summary").innerHTML;
             $("#slug").innerText = el.find(".content .slug").innerText;
             $("#imagesrc").attr("src", el.find(".content .image").innerText);
-            $("#date").innerText = el.find(".content .date").innerHTML;
+            /* https://www.unixtimestamp.com/index.php */
+            $("#date input").value = new Date(Number(el.find(".content .date").innerHTML)).toISOString().slice(0, -5);
             let pTags = !!(el.find(".content .tags").innerHTML) ? (el.find(".content .tags").innerHTML).split(",").map(el=>{
                 return tagTemplate.join(el.trim());
             }).join("") : "";
@@ -171,6 +173,7 @@ loadItems = (lastActive, isSearch) => {
     '"><div class="name">',
     '</div><div class="content"><span class="summary">',
     '</span><div class="date">',
+    '</div><div class="humanDate">',
     '</div><div class="tags">',
     '</div><div class="slug">',
     '</div><div class="image">',
@@ -192,28 +195,32 @@ loadItems = (lastActive, isSearch) => {
         }
 
         arr.map(el=>{
-            console.log(el);
+            //console.log(el);
+            /* https://stackoverflow.com/questions/9229213/convert-iso-date-to-milliseconds-in-javascript */
             /* https://www.toptal.com/software/definitive-guide-to-datetime-manipulation */
-            var currentDate = new Date(el.date);
+            var myDate = new Date(el.date);
+            var offset = myDate.getTimezoneOffset() * 60 * 1000;
+            var dateString = myDate.getTime() - offset;
+            let currentDate = new Date(el.date);
             var date = currentDate.getDate();
             var month = currentDate.getMonth();
             var year = currentDate.getFullYear();
-            var dateString = date + " " + monthArr[month] + " " + year;
+            var humanDate = date + " " + monthArr[month] + " " + year;
             
             el.category.map(cat=>{
                 categories[cat] = 1;
             })
-            
 
             $("#items").innerHTML += 
                 itemTemplate[0] + el.slug +
                 itemTemplate[1] + el.title +
                 itemTemplate[2] + el.content +
                 itemTemplate[3] + dateString +
-                itemTemplate[4] + el.category.join(",") +
-                itemTemplate[5] + el.slug +
-                itemTemplate[6] + el.image +
-                itemTemplate[7]
+                itemTemplate[4] + humanDate +
+                itemTemplate[5] + el.category.join(",") +
+                itemTemplate[6] + el.slug +
+                itemTemplate[7] + el.image +
+                itemTemplate[8]
             ;
         })
 
@@ -259,6 +266,10 @@ adminOnload = function() {
             $(".item").forEach(el=>{
                 el.removeClass("active");
             })
+            var myDate = new Date();
+            var offset = myDate.getTimezoneOffset() * 60 * 1000;
+            var dateString = myDate.getTime() - offset;
+            $("#date input").value = new Date(dateString).toISOString().slice(0, -5);
             $("#title").innerText = "";
             $("#content").innerText = "";
             $("#slug").innerText = "";
@@ -339,6 +350,7 @@ adminOnload = function() {
                 content: $("#content").innerText,
                 category,
                 slug: $("#slug").innerText,
+                date: new Date($("#date input").value).getTime(),
                 image: $("#imagesrc").attr("src")
             }, (res)=>{
                 changesMade = false;
@@ -359,6 +371,10 @@ adminOnload = function() {
                 $("#imagesrc").attr("src", "/image/"+xhr.responseText)
             }
             xhr.send(fd);
+        });
+
+        $("#postFullDate").addEventListener("change", function(el){
+            changesMade = true;
         });
     
         $("#removePost").addEventListener("click", function(){
