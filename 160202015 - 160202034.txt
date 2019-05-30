@@ -1,0 +1,2638 @@
+160202015 - Oğuzhan Türker
+160202034 - Ata Gülalan
+             __
+        _   / /|
+       |\\  \/_/
+       \_\| / __
+          \/_/__\           .-=='/~\
+   ____,__/__,_____,______)/   /{~}}}
+   -,------,----,-----,---,\'-' {{~}}
+                            '-==.\}/
+
+
+
+--------{--(@  tick-lite/containers/List.js  @)--}--------
+
+import React, { Component } from "react";
+/* https://documentation.onesignal.com/docs/react-native-sdk-setup */
+import OneSignal from "react-native-onesignal";
+
+import {
+  Text,
+  View,
+  Picker,
+  Image,
+  TouchableNativeFeedback,
+  BackHandler,
+  ToastAndroid,
+  FlatList,
+  StyleSheet
+} from "react-native";
+
+export default class App extends Component {
+  /* https://stackoverflow.com/questions/46065819/remove-top-navigation-bar-for-certain-screens */
+  static navigationOptions = {
+    title: "Tick",
+    header: null
+  };
+
+  constructor(props) {
+    super(props);
+    OneSignal.init("7d5f91ae-d848-475e-b3cc-470d3f2b9fcc");
+    OneSignal.addEventListener("received", this.onReceived.bind(this));
+    OneSignal.addEventListener("opened", this.onOpened.bind(this));
+    this.state = {
+      news: [],
+      categories: [],
+      currentCategory: ""
+    };
+  }
+
+  /* http://www.avarekodcu.com/konu/17/react-native-ornek-login-uygulamasi-3-ajax-kullanimi-istekler-ve-uyarilar */
+  /* https://hackernoon.com/react-native-how-to-setup-your-first-app-a36c450a8a2f */
+  /* https://blog.usejournal.com/understanding-react-native-component-lifecycle-api-d78e06870c6d */
+  /* https://stackoverflow.com/questions/43380260/draw-horizontal-rule-in-react-native */
+  /* https://stackoverflow.com/questions/32030050/how-can-you-float-right-in-react-native */
+  /* https://www.youtube.com/watch?v=22LEiBYBiTw */
+
+  getItems() {
+    req("/list/" + this.state.currentCategory, "GET", null, res => {
+      let categories = {};
+
+      // eski kategorileri tut
+      this.state.categories.map(cat => {
+        categories[cat] = 1;
+      });
+
+      res.map(item => {
+        item.category.map(cat => {
+          categories[cat] = 1;
+        });
+      });
+
+      res.reverse();
+
+      this.setState({
+        news: res,
+        categories: Object.keys(categories)
+      });
+
+      /* https://github.com/facebook/react-native/issues/13560 */
+      this.refs.listRef.scrollToOffset({ x: 0, y: 0, animated: true });
+    });
+  }
+
+  handleBackPress(e) {
+    ToastAndroid.show("Güncelleniyor", ToastAndroid.SHORT);
+    this.getItems();
+    return true;
+  }
+
+  componentWillMount() {
+    this.getItems();
+  }
+
+  componentDidMount() {
+    this.props.navigation.addListener("willFocus", () => {
+      this.backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        this.handleBackPress.bind(this)
+      );
+    });
+    this.props.navigation.addListener("willBlur", () => {
+      this.backHandler.remove();
+    });
+  }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener(
+      "hardwareBackPress",
+      this.handleBackPress.bind(this)
+    );
+    OneSignal.removeEventListener("received", this.onReceived.bind(this));
+    OneSignal.removeEventListener("opened", this.onOpened.bind(this));
+  }
+
+  onReceived() {
+    // Yeni haber geldi, yenile
+    this.getItems();
+  }
+
+  onOpened(openResult) {
+    const { navigate } = this.props.navigation;
+    navigate("Home");
+    setTimeout(function() {
+      navigate("Post", {
+        slug: openResult.notification.payload.additionalData.slug,
+        title: openResult.notification.payload.additionalData.title
+      });
+    }, 300);
+  }
+
+  newsList({ item }) {
+    const { navigate } = this.props.navigation;
+
+    // Tick Admin'den alıntı
+    let monthArr = "Ocak,Şubat,Mart,Nisan,Mayıs,Haziran,Temmuz,Ağustos,Eylül,Ekim,Kasım,Aralık".split(
+      ","
+    );
+    var c = new Date(item.date);
+    var dateString =
+      c.getDate() + " " + monthArr[c.getMonth()] + " " + c.getFullYear();
+
+    return (
+      <TouchableNativeFeedback
+        key={item.slug}
+        onPress={() => navigate("Post", { slug: item.slug, title: item.title })}
+      >
+        <View style={styles.box}>
+          <Image
+            style={styles.boxImage}
+            source={{ uri: baseURL + item.image }}
+          />
+          <Text style={styles.boxTitle}>{item.title}</Text>
+          <View style={styles.boxDownWrapper}>
+            <Text style={styles.boxTags}>
+              {item.category.join(", ").toUpperCase()}
+            </Text>
+            <Text style={styles.boxTime}>{dateString}</Text>
+          </View>
+        </View>
+      </TouchableNativeFeedback>
+    );
+  }
+
+  render() {
+    return (
+      <View style={styles.mainView}>
+        <View style={styles.header}>
+          <Text style={styles.logo}>tick</Text>
+          <Picker
+            selectedValue={this.state.currentCategory}
+            style={styles.picker}
+            onValueChange={itemValue =>
+              this.setState({ currentCategory: itemValue }, this.getItems)
+            }
+          >
+            <Picker.Item label="Tümü" value="" />
+            {this.state.categories.map(e => (
+              <Picker.Item key={e} label={e} value={e} />
+            ))}
+          </Picker>
+        </View>
+        <FlatList
+          data={this.state.news}
+          extraData={this.state}
+          keyExtractor={(item, index) => item.slug}
+          renderItem={this.newsList.bind(this)}
+          ref="listRef"
+        />
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  box: {
+    borderBottomColor: "#edeef1",
+    borderBottomWidth: 1,
+    width: "100%",
+    marginBottom: 25,
+    backgroundColor: "#f9f9f9"
+  },
+  boxImage: {
+    width: "100%",
+    height: 150,
+    backgroundColor: "#eff0f1"
+  },
+  boxTitle: {
+    fontFamily: "Nunito-SemiBold",
+    fontSize: 20,
+    paddingTop: 10,
+    paddingLeft: 25,
+    paddingRight: 25,
+    color: "#101010",
+    paddingBottom: 0,
+    textTransform: "capitalize",
+    borderTopColor: "#edeef1",
+    borderTopWidth: 1
+  },
+  boxDownWrapper: {
+    justifyContent: "space-between",
+    flexDirection: "row",
+    paddingBottom: 10,
+    paddingLeft: 25,
+    paddingRight: 25
+  },
+  boxTags: {
+    fontFamily: "Nunito-Regular",
+    fontSize: 14,
+    paddingTop: 5,
+    alignSelf: "flex-start",
+    color: "#575757"
+  },
+  boxTime: {
+    fontFamily: "Nunito-Regular",
+    fontSize: 14,
+    color: "#575757",
+    alignSelf: "flex-end"
+  },
+  mainView: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    padding: 0,
+    fontFamily: "Nunito-Bold"
+  },
+  header: {
+    justifyContent: "space-around",
+    flexDirection: "row",
+    height: 55,
+    paddingLeft: 25,
+    paddingRight: 25,
+    borderBottomColor: "#edeef1",
+    borderBottomWidth: 2
+  },
+  logo: {
+    lineHeight: 50,
+    width: "50%",
+    alignSelf: "flex-start",
+    fontFamily: "Nunito-Black",
+    fontSize: 26,
+    color: "#1e96ff"
+  },
+  picker: {
+    lineHeight: 50,
+    width: "50%",
+    alignSelf: "flex-end"
+  }
+});
+
+
+
+--------{--(@  tick-lite/containers/Post.js  @)--}--------
+
+import React from "react";
+import DeviceInfo from "react-native-device-info";
+
+import {
+  View,
+  Text,
+  ScrollView,
+  Image,
+  StyleSheet,
+  TouchableNativeFeedback
+} from "react-native";
+
+export default class Home extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      deviceId: "",
+      new: {
+        title: "",
+        content: "",
+        category: [],
+        date: 0,
+        stats: {
+          like: 0,
+          dislike: 0,
+          views: 0
+        }
+      }
+    };
+  }
+
+  getNew(slug) {
+    req("/view/" + slug, "GET", null, res => {
+      this.setState({
+        new: res
+      });
+    });
+  }
+
+  /* https://facebook.github.io/react-native/docs/network */
+  vote(diff) {
+    req(
+      "/vote",
+      "POST",
+      JSON.stringify({
+        /* https://aboutreact.com/react-native-get-unique-id-of-device/ */
+        userid: this.state.deviceId,
+        slug: this.state.new.slug,
+        diff
+      }),
+      res => {
+        this.setState({
+          new: {
+            ...this.state.new,
+            stats: res
+          }
+        });
+      }
+    );
+  }
+
+  componentDidMount() {
+    var id = DeviceInfo.getUniqueID();
+    this.setState({ deviceId: id });
+    this.props.navigation.addListener("willFocus", payload => {
+      let { slug } = payload.state.params;
+      this.getNew(slug);
+    });
+  }
+
+  static navigationOptions = ({ navigation }) => ({
+    title: `${navigation.state.params.title}`,
+    headerTitleStyle: {
+      textAlign: "center",
+      alignSelf: "center",
+      fontWeight: "400"
+    },
+    headerStyle: {
+      backgroundColor: "white",
+      height: 50
+    }
+  });
+
+  render() {
+    return (
+      <View style={styles.mainView}>
+        <ScrollView style={styles.scroll}>
+          <Image
+            resizeMode="cover"
+            style={styles.postImage}
+            source={{ uri: baseURL + this.state.new.image }}
+          />
+          <Text style={styles.postTitle}>{this.state.new.content}</Text>
+        </ScrollView>
+        <View style={styles.feedback}>
+          <View style={styles.statWrapper} onPress={() => this.vote(1)}>
+            <Text style={styles.numbers}>{this.state.new.stats.views}</Text>
+            <Text style={styles.stat}>Views</Text>
+          </View>
+          <TouchableNativeFeedback
+            key="like"
+            onPress={() => this.vote(1)}
+            style={styles.padder}
+          >
+            <View style={styles.statWrapper}>
+              <Text style={styles.stat}>Like</Text>
+              <Text style={styles.numbers}>({this.state.new.stats.like})</Text>
+            </View>
+          </TouchableNativeFeedback>
+          <TouchableNativeFeedback
+            key="dislike"
+            onPress={() => this.vote(-1)}
+            style={styles.padder}
+          >
+            <View style={styles.statWrapper}>
+              <Text style={styles.stat}>Dislike</Text>
+              <Text style={styles.numbers}>({this.state.new.stats.dislike})</Text>
+            </View>
+          </TouchableNativeFeedback>
+        </View>
+      </View>
+    );
+  }
+}
+
+const styles = StyleSheet.create({
+  mainView: {
+    flex: 1,
+    flexDirection: "column",
+    justifyContent: "flex-start",
+    padding: 0,
+    fontFamily: "Nunito-Bold"
+  },
+  postImage: {
+    width: "100%",
+    height: 200,
+    backgroundColor: "#eff0f1"
+  },
+  postTitle: {
+    padding: 20,
+    color: "#000307",
+    borderTopColor: "#edeef1",
+    borderTopWidth: 2
+  },
+  feedback: {
+    height:42,
+    justifyContent: "space-around",
+    flexDirection: "row",
+    borderTopColor: "#edeef1",
+    borderTopWidth: 2,
+    textAlign: "center"
+  },
+  statWrapper: {
+    fontSize: 15,
+    flexDirection: "row",
+    height:38,
+    paddingLeft:30,
+    paddingRight:30,
+    alignItems: "center"
+  },
+  stat: {
+    color: "#999",
+    paddingRight:2,
+    paddingLeft:2,
+  },
+  numbers: {
+    color: "#555",
+    paddingRight:2,
+    paddingLeft:2,
+  },
+});
+
+
+
+--------{--(@  tick-lite/index.js  @)--}--------
+
+import { AppRegistry } from "react-native";
+import HomeScreen from "./containers/List";
+import Post from "./containers/Post";
+import { createStackNavigator, createAppContainer } from "react-navigation";
+
+let appName = "tick";
+global.baseURL = "https://tick.xava.me";
+global.req = (url, type, body, callback) => {
+  fetch(baseURL + url, {
+    method: type,
+    headers: { "Content-Type": "application/json" },
+    body
+  })
+    .then(res => res.json())
+    .then(res => {
+      if (res.result != -1) {
+        if (callback) {
+          callback(res);
+        }
+      } else {
+        Alert.alert("Veri boş", "?");
+      }
+    })
+    .catch(error => {
+      Alert.alert("Hata", "Sunucuya bağlanırken bir hata oluştu" + error);
+    });
+};
+
+const MainNavigator = createStackNavigator({
+  Home: { screen: HomeScreen },
+  Post: { screen: Post }
+});
+
+AppRegistry.registerComponent(appName, () => createAppContainer(MainNavigator));
+
+
+
+--------{--(@  tick-lite/package.json  @)--}--------
+
+{
+  "name": "tick-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "rnpm": {
+    "assets": [
+      "./fonts"
+    ]
+  },
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "android": "react-native run-android",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "16.8.3",
+    "react-native": "0.59.5",
+    "react-native-device-info": "^1.5.0",
+    "react-native-gesture-handler": "^1.1.0",
+    "react-native-onesignal": "^3.2.12",
+    "react-navigation": "^3.9.0"
+  },
+  "devDependencies": {
+    "@babel/core": "7.4.3",
+    "@babel/runtime": "7.4.3",
+    "babel-jest": "24.7.1",
+    "jest": "24.7.1",
+    "metro-react-native-babel-preset": "0.53.1",
+    "react-test-renderer": "16.8.3"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
+}
+
+
+
+--------{--(@  tick-lite/readme.MD  @)--}--------
+
+# Tick Mobile Lite (Only Android Version)
+
+Run emulator:
+```
+cd %ANDROID_HOME%/emulator && emulator -avd Nexus_5X_API_28
+```
+
+Android clean build & run:
+```
+npm install
+npm install -g react-native-cli
+react-native link
+cd android
+./gradlew clean
+cd ..
+npm run android
+```
+
+Generating APK File:
+```
+react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+cd android/
+./gradlew assembleDebug
+cd app/build/outputs/apk/debug
+explorer .
+```
+
+
+
+--------{--(@  tick-server/index.js  @)--}--------
+
+const express = require("express");
+const fileUpload = require("express-fileupload");
+const path = require("path");
+const { login, admin, error, vote, view, image, list } = require("./src");
+const app = express();
+const port = 4540;
+
+const low = require("lowdb");
+const FileSync = require("lowdb/adapters/FileSync");
+const adapter = new FileSync("database/db.json");
+const db = low(adapter);
+
+// Set some defaults (required if your JSON file is empty)
+db.defaults({ users: [], posts: [], votes: [] }).write();
+
+// Parse JSON from body of the request
+app.use(express.json());
+app.use(fileUpload());
+
+// Adding memory database reference as request key
+app.use(function(req, res, next) {
+  req.globalDatabase = db;
+  next();
+});
+
+// Public Folder
+app.use(express.static(path.join(__dirname, "./public")));
+
+//Direct Access
+app.post("/login", login);
+
+app.post("/admin/add", admin.add);
+app.post("/admin/remove", admin.remove);
+
+app.post("/vote", vote);
+
+app.get("/view/:slug", view);
+
+app.post("/image", image.post);
+app.get("/image/:imageid", image.get);
+
+app.get("/list", list.all);
+app.get("/list/:categoryid", list.category);
+
+app.get("/404", error);
+
+//Redirect to 404
+app.use(function(req, res) {
+  res.redirect("/404");
+});
+
+// Listen to your commender
+app.listen(port, () => console.log(`Listening, commender! ${port}`));
+
+
+
+--------{--(@  tick-server/package.json  @)--}--------
+
+{
+  "name": "tick-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./node_modules/nodemon/bin/nodemon index.js"
+  },
+  "author": "atagulalan",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-fileupload": "^1.1.4",
+    "lowdb": "^1.0.0",
+    "nodemon": "^1.18.11",
+    "sha1": "^1.1.1"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "database/*"
+    ]
+  }
+}
+
+
+
+--------{--(@  tick-server/public/admin/index.html  @)--}--------
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+    <script src="../assets/js/main.js"></script>
+    <title>Tick Admin</title>
+  </head>
+  <body onload="adminOnload()">
+    <div class="adminWrapper">
+      <div class="modal" id="categoriesModal">
+        <div class="modalInner">
+          <h1>Kategoriler</h1>
+          <div class="inner">
+            <div class="addCategory">
+              <input id="categoryName" placeholder="+ Kategori ekle" required />
+              <button class="addButton" id="createCategory">Oluştur</button>
+            </div>
+            <ul></ul>
+          </div>
+          <div class="bottom">
+            <button class="gray" onclick="exitModal('#categoriesModal')">
+              İptal
+            </button>
+            <button onclick="exitModal('#categoriesModal', addCategory)">
+              Ekle
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="admin">
+        <div class="leftBar">
+          <div class="logo">tick</div>
+          <hr />
+          <div class="leftInner">
+            <button id="newPost">
+              <svg
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19,13 L19,20 C19,20.5522847 18.5522847,21 18,21 L4,21 C3.44771525,21 3,20.5522847 3,20 L3,4 C3,3.44771525 3.44771525,3 4,3 L13,3"
+                ></path>
+                <path
+                  d="M21.2892136 2.03921356L21.9607864 2.71078644C22.741835 3.49183502 22.741835 4.75816498 21.9607864 5.53921356L12 15.5 8.5 15.5 8.5 12 18.4607864 2.03921356C19.241835 1.25816498 20.508165 1.25816498 21.2892136 2.03921356zM17.25 3.25L20.75 6.75"
+                ></path>
+              </svg>
+              Yeni haber
+            </button>
+            <ul>
+              <li class="active">
+                <svg
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M18.4142136 4.41421356L19.5857864 5.58578644C20.366835 6.36683502 20.366835 7.63316498 19.5857864 8.41421356L8 20 4 20 4 16 15.5857864 4.41421356C16.366835 3.63316498 17.633165 3.63316498 18.4142136 4.41421356zM14 6L18 10"
+                  ></path>
+                </svg>
+                Haberler
+                <div class="number" id="postsNumber"></div>
+              </li>
+              <li onclick="showModal('#categoriesModal', 'noTouch')">
+                <svg
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="10" cy="12" r="1"></circle>
+                  <path
+                    d="M8 18l-6-6 6-6h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H8z"
+                  ></path>
+                </svg>
+                Kategoriler
+                <div class="number" id="categoriesNumber"></div>
+              </li>
+              <li onclick="logout()">
+                <svg
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 2L12 11M18.363961 5.63603897C21.8786797 9.15075759 21.8786797 14.8492424 18.363961 18.363961 14.8492424 21.8786797 9.15075759 21.8786797 5.63603897 18.363961 2.12132034 14.8492424 2.12132034 9.15075759 5.63603897 5.63603897"
+                  ></path>
+                </svg>
+                Çıkış
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="secondLeftBar full">
+          <div class="top">
+            <input type="text" id="search" />
+            <div class="search" id="searchButton">
+              <svg
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+              >
+                <path d="M14.4121122,14.4121122 L20,20"></path>
+                <circle cx="10" cy="10" r="6"></circle>
+              </svg>
+            </div>
+          </div>
+          <hr />
+          <div class="filter active" id="filter">
+            <div class="image">
+              <svg
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+              >
+                <path d="M10 7L14 7M6 12L18 12M3 17L21 17"></path>
+              </svg>
+            </div>
+            <span>En yeni</span>
+          </div>
+          <div class="secondLeftInner">
+            <span id="items"></span>
+            <div class="adder">
+              <div class="button" id="addCircle">
+                <svg
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M20 12L4 12M12 4L12 20"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="main">
+          <div class="top">
+            <div class="remove" id="removePost">
+              <svg
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  d="M19 6L5 6M14 5L10 5M6 10L6 20C6 20.6666667 6.33333333 21 7 21 7.66666667 21 11 21 17 21 17.6666667 21 18 20.6666667 18 20 18 19.3333333 18 16 18 10"
+                ></path>
+              </svg>
+            </div>
+            <div class="notify" id="notifyPost">
+              <svg
+                role="img"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                aria-labelledby="sendIconTitle sendIconDesc"
+              >
+                <polygon
+                  points="21.368 12.001 3 21.609 3 14 11 12 3 9.794 3 2.394"
+                ></polygon>
+              </svg>
+            </div>
+          </div>
+          <hr />
+          <div class="innerMain">
+            <div class="desc">
+              <span id="date">
+                  <input type="datetime-local" id="postFullDate"
+                    name="meeting-time" value="2018-06-12T19:30" required>
+              </span>
+            </div>
+            <h1 contenteditable="true" id="title" placeholder="Başlık"></h1>
+            <span id="slug"></span>
+            <div class="tags" id="tags"></div>
+            <div
+              class="content"
+              contenteditable="true"
+              id="content"
+              placeholder="İçerik"
+            ></div>
+            <div class="bottom">
+              <div class="imageWrapper">
+                <div class="remove" id="imageRemover">
+                  <svg
+                    role="img"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      d="M6.34314575 6.34314575L17.6568542 17.6568542M6.34314575 17.6568542L17.6568542 6.34314575"
+                    ></path>
+                  </svg>
+                </div>
+                <img src="" alt="" id="imagesrc" />
+                <span>Resim yüklemek için tıklayın</span>
+                <input type="file" name="pic" id="image" accept="image/*" />
+              </div>
+              <button id="save">Kaydet</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+
+
+--------{--(@  tick-server/public/assets/css/styles.css  @)--}--------
+
+@import url("https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&subset=latin-ext,vietnamese");
+html,
+body {
+  font-family: "Nunito", sans-serif;
+  color: #2e2f33;
+  background: #f8f9fa;
+  font-size: 14pt;
+  overflow-x: hidden;
+}
+
+*,
+input,
+textarea {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Nunito", sans-serif;
+  cursor: default;
+}
+
+*:focus,
+input:focus,
+textarea:focus {
+  outline: 0;
+}
+
+input,
+textarea {
+  cursor: text;
+}
+
+a {
+  font-weight: 400;
+  color: #228be6;
+  transition: all 0.3s;
+}
+
+h1 {
+  text-align: center;
+  font-weight: 300;
+  color: #767792;
+}
+
+label {
+  display: inline-block;
+  color: #adb5bd;
+  width: 100%;
+  text-transform: uppercase;
+}
+
+input {
+  display: inline-block;
+  margin: 0 20px 0 0;
+  padding: 0;
+  border: none;
+  border-bottom: 1px solid #f1f3f5;
+  background: #fff;
+  width: 100%;
+  color: #32325d;
+  outline: 0;
+  line-height: 32px;
+  font-size: 12pt;
+}
+
+button {
+  border-radius: 5px;
+  line-height: 80px;
+  background: #4d7cfe;
+  border: 0;
+  color: #fff;
+  font-weight: 700;
+  font-size: 13pt;
+  margin: 0 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.2px;
+}
+
+button * {
+  cursor: pointer;
+}
+
+button svg {
+  stroke: #b1cdfd;
+  width: 22px;
+  height: 22px;
+  margin-bottom: 4px;
+  margin-right: 5px;
+}
+
+button:hover {
+  background: #4774f1;
+}
+
+button.gray {
+  background: #edecf1;
+  color: #9f9fa7;
+}
+
+button.gray:hover {
+  background: #e8e6ec;
+}
+
+svg {
+  width: 48px;
+  height: 48px;
+  stroke: #c5c6cb;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  vertical-align: middle;
+}
+
+.err {
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: #fe4f4c;
+}
+
+.inputWrapper {
+  margin: 16px 8px 24px;
+}
+
+.loginWrapper {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loginWrapper .login {
+  width: 440px;
+  background: #fff;
+  border-radius: 5px;
+  padding: 24px;
+  margin: 20px;
+  box-shadow: 0px 3px 60px -6px rgba(0, 0, 0, 0.1);
+}
+
+.loginWrapper .login h1 {
+  font-weight: 900;
+  margin: 10px 0 40px;
+}
+
+.loginWrapper .login button {
+  margin: 10px 8px 20px;
+  width: calc(100% - 16px);
+  font-size: 16pt;
+}
+
+.loginWrapper .login button svg {
+  width: 32px;
+  height: 32px;
+}
+
+.adminWrapper {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.adminWrapper #categoriesModal.noTouch .modalInner .inner ul li {
+  cursor: default;
+}
+
+.adminWrapper #categoriesModal.noTouch .modalInner .inner ul li.active, .adminWrapper #categoriesModal.noTouch .modalInner .inner ul li:hover {
+  background: transparent;
+  border-bottom: 1px solid #f5f6f8;
+}
+
+.adminWrapper #categoriesModal.noTouch button {
+  display: none;
+}
+
+.adminWrapper #categoriesModal.noTouch button.gray, .adminWrapper #categoriesModal.noTouch button#createCategory {
+  display: inline-block;
+}
+
+.adminWrapper .modal {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: -123;
+  background: rgba(255, 255, 255, 0);
+  transition: 0.2s background;
+}
+
+.adminWrapper .modal.active {
+  z-index: 123;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.adminWrapper .modal.active + .admin {
+  filter: blur(3px);
+}
+
+.adminWrapper .modal.active .modalInner {
+  transform: translateY(0px);
+  opacity: 1;
+}
+
+.adminWrapper .modal .modalInner {
+  width: 440px;
+  background: #fff;
+  border-radius: 5px;
+  padding: 24px 0;
+  margin: 20px;
+  box-shadow: 0px 3px 60px -6px rgba(0, 0, 0, 0.1);
+  transform: translateY(50px);
+  opacity: 0;
+  transition: 0.2s all;
+}
+
+.adminWrapper .modal .modalInner .bottom {
+  text-align: right;
+  padding: 0 24px;
+}
+
+.adminWrapper .modal .modalInner .inner {
+  margin: 20px 0;
+  height: 200px;
+  border-top: 2px solid #f5f6f8;
+  overflow: auto;
+}
+
+.adminWrapper .modal .modalInner .inner .addCategory {
+  height: 50px;
+  border-bottom: 1px solid #f5f6f8;
+  overflow: hidden;
+  position: relative;
+}
+
+.adminWrapper .modal .modalInner .inner .addCategory input {
+  line-height: 50px;
+  padding: 0 20px;
+  font-size: 14pt;
+  cursor: text;
+}
+
+.adminWrapper .modal .modalInner .inner .addCategory input::placeholder {
+  color: #4d7cfe;
+  opacity: 1;
+  transition: 0.2s opacity;
+}
+
+.adminWrapper .modal .modalInner .inner .addCategory input:focus::placeholder {
+  opacity: 0;
+}
+
+.adminWrapper .modal .modalInner .inner .addCategory input:valid + button {
+  right: 5px;
+}
+
+.adminWrapper .modal .modalInner .inner .addCategory button {
+  transition: 0.2s all;
+  top: 5px;
+  right: -100px;
+  position: absolute;
+}
+
+.adminWrapper .modal .modalInner .inner ul {
+  list-style: none;
+}
+
+.adminWrapper .modal .modalInner .inner ul li {
+  line-height: 50px;
+  border-bottom: 1px solid #f5f6f8;
+  padding-left: 20px;
+  cursor: pointer;
+  transition: 0.2s all;
+}
+
+.adminWrapper .modal .modalInner .inner ul li:hover {
+  background: #f8faff;
+  border-bottom: 1px solid #f8faff;
+}
+
+.adminWrapper .modal .modalInner .inner ul li.active {
+  background: #e8efff;
+  border-bottom: 1px solid #e8efff;
+}
+
+.adminWrapper .modal .modalInner button {
+  height: 40px;
+  line-height: 40px;
+  padding: 0 15px;
+  font-size: 10pt;
+  margin: 0px;
+}
+
+.adminWrapper .admin {
+  width: 100vw;
+  min-height: 100vh;
+  transition: 0.2s filter;
+}
+
+.adminWrapper .admin .leftBar {
+  width: 350px;
+  background: white;
+  height: 100vh;
+  position: fixed;
+  box-shadow: -3px 0 30px 0px rgba(0, 0, 0, 0.1);
+  z-index: 2;
+}
+
+.adminWrapper .admin .leftBar.small {
+  width: 65px;
+  overflow: hidden;
+}
+
+.adminWrapper .admin .leftBar.small .logo {
+  padding: 20px 10px;
+  font-size: 20pt;
+}
+
+.adminWrapper .admin .leftBar.small .leftInner {
+  width: 350px;
+}
+
+.adminWrapper .admin .leftBar.small .leftInner button {
+  height: 50px;
+  margin: 0 7.5px;
+  width: 50px;
+  border-radius: 50%;
+}
+
+.adminWrapper .admin .leftBar.small .leftInner button svg {
+  margin-bottom: 11px;
+  margin-right: 0;
+}
+
+.adminWrapper .admin .leftBar.small .leftInner ul li {
+  padding: 10px 19px;
+}
+
+.adminWrapper .admin .leftBar.small + .secondLeftBar {
+  left: 65px;
+}
+
+.adminWrapper .admin .leftBar.small + .secondLeftBar.full {
+  width: calc(100vw - 65px);
+  left: 65px;
+}
+
+.adminWrapper .admin .leftBar.small + .secondLeftBar + .main {
+  width: calc(100vw - 515px);
+  left: 515px;
+}
+
+.adminWrapper .admin .leftBar .logo {
+  padding: 15px 50px;
+  /*https://www.cssmatic.com/gradient-generator#'\-moz\-linear\-gradient\%28top\%2C\%20rgba\%2830\%2C150\%2C255\%2C1\%29\%200\%25\%2C\%20rgba\%2838\%2C121\%2C254\%2C1\%29\%20100\%25\%29\%3B'*/
+  background: #1e96ff;
+  background: -moz-linear-gradient(top, #1e96ff 0%, #2679fe 100%);
+  background: -webkit-gradient(left top, left bottom, color-stop(0%, #1e96ff), color-stop(100%, #2679fe));
+  background: -webkit-linear-gradient(top, #1e96ff 0%, #2679fe 100%);
+  background: -o-linear-gradient(top, #1e96ff 0%, #2679fe 100%);
+  background: -ms-linear-gradient(top, #1e96ff 0%, #2679fe 100%);
+  background: linear-gradient(to bottom, #1e96ff 0%, #2679fe 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1e96ff', endColorstr='#2679fe', GradientType=0 );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 24pt;
+  font-weight: 900;
+  margin: 0;
+  height: 74px;
+}
+
+.adminWrapper .admin .leftBar hr {
+  width: 100%;
+  border: none;
+  height: 2px;
+  background: #f5f6f8;
+}
+
+.adminWrapper .admin .leftBar .leftInner {
+  margin-top: 50px;
+}
+
+.adminWrapper .admin .leftBar .leftInner button {
+  width: calc(100% - 100px);
+  height: 60px;
+  line-height: 60px;
+  margin: 0 50px;
+}
+
+.adminWrapper .admin .leftBar .leftInner ul {
+  list-style: none;
+  margin-top: 50px;
+}
+
+.adminWrapper .admin .leftBar .leftInner ul li {
+  border-left: 3px solid transparent;
+  padding: 10px 50px;
+  font-weight: 600;
+  margin: 20px 0;
+  cursor: pointer;
+  transition: 0.2s all;
+}
+
+.adminWrapper .admin .leftBar .leftInner ul li * {
+  cursor: pointer;
+}
+
+.adminWrapper .admin .leftBar .leftInner ul li svg {
+  width: 28px;
+  height: 28px;
+  margin-right: 10px;
+  margin-bottom: 3px;
+  stroke: #c5c6cb;
+  transition: 0.2s all;
+}
+
+.adminWrapper .admin .leftBar .leftInner ul li .number {
+  float: right;
+  border: 1px solid #f1f2f7;
+  border-radius: 50px;
+  color: #a3a8b3;
+  padding: 2px 15px;
+  font-size: 11pt;
+  transition: 0.2s all;
+  vertical-align: middle;
+}
+
+.adminWrapper .admin .leftBar .leftInner ul li .number:empty {
+  display: none;
+}
+
+.adminWrapper .admin .leftBar .leftInner ul li.active, .adminWrapper .admin .leftBar .leftInner ul li:hover {
+  color: #4f82ff;
+}
+
+.adminWrapper .admin .leftBar .leftInner ul li.active svg, .adminWrapper .admin .leftBar .leftInner ul li:hover svg {
+  stroke: #b3cefe;
+}
+
+.adminWrapper .admin .leftBar .leftInner ul li.active .number, .adminWrapper .admin .leftBar .leftInner ul li:hover .number {
+  color: #5687ff;
+}
+
+.adminWrapper .admin .leftBar .leftInner ul li.active {
+  border-left: 3px solid #7da5fc;
+}
+
+.adminWrapper .admin .secondLeftBar {
+  position: fixed;
+  width: 450px;
+  left: 350px;
+  height: 100vh;
+  transition: 0.2s all;
+  z-index: 1;
+  background: #f8f9fa;
+}
+
+.adminWrapper .admin .secondLeftBar.full {
+  width: calc(100vw - 350px);
+}
+
+.adminWrapper .admin .secondLeftBar .top {
+  height: 74px;
+  text-align: right;
+  overflow: hidden;
+  border-right: 1px solid #edeef1;
+}
+
+.adminWrapper .admin .secondLeftBar .top input {
+  width: 100%;
+  margin: 0;
+  left: 0;
+  top: 0;
+  position: absolute;
+  height: 74px;
+  border: none;
+  background: #f8f9fa;
+  z-index: 0;
+  cursor: text;
+  padding: 25px;
+}
+
+.adminWrapper .admin .secondLeftBar .top * {
+  cursor: pointer;
+}
+
+.adminWrapper .admin .secondLeftBar .top div {
+  width: 74px;
+  height: 74px;
+  display: inline-block;
+  position: relative;
+  z-index: 2;
+}
+
+.adminWrapper .admin .secondLeftBar .top div:hover svg {
+  stroke: #aaa;
+}
+
+.adminWrapper .admin .secondLeftBar .top div svg {
+  width: 28px;
+  height: 28px;
+  margin: 23px;
+  transition: 0.2s all;
+  cursor: pointer;
+}
+
+.adminWrapper .admin .secondLeftBar .filter {
+  padding: 10px 15px;
+  height: 64px;
+  overflow: hidden;
+  color: #a4a8b3;
+  font-weight: 600;
+  border-right: 1px solid #edeef1;
+  border-bottom: 1px solid #edeef1;
+  cursor: pointer;
+  transition: 0.2s all;
+}
+
+.adminWrapper .admin .secondLeftBar .filter * {
+  cursor: pointer;
+}
+
+.adminWrapper .admin .secondLeftBar .filter:hover {
+  color: #888;
+}
+
+.adminWrapper .admin .secondLeftBar .filter:hover svg {
+  stroke: #aaa;
+}
+
+.adminWrapper .admin .secondLeftBar .filter.active .image svg {
+  transform: rotateZ(180deg);
+}
+
+.adminWrapper .admin .secondLeftBar .filter .image {
+  width: 44px;
+  height: 44px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.adminWrapper .admin .secondLeftBar .filter .image svg {
+  width: 28px;
+  height: 28px;
+  transition: 0.2s all;
+  margin: 6px 8px 8px;
+}
+
+.adminWrapper .admin .secondLeftBar hr {
+  width: 100%;
+  border: none;
+  height: 2px;
+  background: #edeef1;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner {
+  overflow: auto;
+  height: calc(100vh - 138px);
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item {
+  width: 100%;
+  height: 130px;
+  transition: 0.2s all;
+  padding: 40px 25px;
+  border-right: 1px solid #edeef1;
+  border-bottom: 1px solid #edeef1;
+  cursor: pointer;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item:hover {
+  background: #f4f4f4;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item.active {
+  background: white;
+  border-right: 1px solid #fff;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item * {
+  cursor: pointer;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .name {
+  font-size: 15pt;
+  font-weight: 700;
+  color: #303135;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content {
+  font-size: 11pt;
+  color: #b1b7c0;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .summary {
+  white-space: nowrap;
+  overflow: hidden;
+  display: block;
+  text-overflow: ellipsis;
+  width: 70%;
+  float: left;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .humanDate {
+  display: block;
+  float: right;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .tags,
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .slug,
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .image,
+.adminWrapper .admin .secondLeftBar .secondLeftInner .item .content .date {
+  display: none;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .adder {
+  padding: 40px;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .adder .button {
+  width: 60px;
+  height: 60px;
+  background: #4d7cfe;
+  border-radius: 50%;
+  margin: 0 auto;
+  cursor: pointer;
+  transition: 0.2s all;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .adder .button:hover {
+  background: #4774f1;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .adder .button * {
+  cursor: pointer;
+}
+
+.adminWrapper .admin .secondLeftBar .secondLeftInner .adder .button svg {
+  width: 32px;
+  height: 32px;
+  margin: 14px;
+  stroke: #fff;
+}
+
+.adminWrapper .admin .main {
+  width: calc(100vw - 800px);
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 800px;
+  background: white;
+  transition: 0.2s all;
+}
+
+.adminWrapper .admin .main .top {
+  height: 74px;
+}
+
+.adminWrapper .admin .main .top .notify {
+  float: right;
+}
+
+.adminWrapper .admin .main .top .notify.active svg {
+  stroke: #4d7cfe;
+}
+
+.adminWrapper .admin .main .top div {
+  width: 74px;
+  height: 74px;
+  display: inline-block;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+}
+
+.adminWrapper .admin .main .top div * {
+  cursor: pointer;
+}
+
+.adminWrapper .admin .main .top div:hover svg {
+  stroke: #aaa;
+}
+
+.adminWrapper .admin .main .top div svg {
+  width: 28px;
+  height: 28px;
+  margin: 23px;
+  transition: 0.2s all;
+  cursor: pointer;
+}
+
+.adminWrapper .admin .main hr {
+  width: 100%;
+  border: none;
+  height: 2px;
+  background: #f5f6f8;
+}
+
+.adminWrapper .admin .main .innerMain {
+  width: 800px;
+  height: calc(100vh - 76px);
+  padding-bottom: 100px;
+  margin: 0 auto;
+  overflow: auto;
+  /*https://stackoverflow.com/questions/425274/prevent-line-paragraph-breaks-in-contenteditable*/
+}
+
+.adminWrapper .admin .main .innerMain .desc {
+  margin-top: 74px;
+  color: #a4a8b3;
+}
+
+.adminWrapper .admin .main .innerMain .desc #date input {
+  color: #a4a8b3;
+  font-family: 'Nunito';
+  font-size: 14pt;
+  border: none;
+}
+
+.adminWrapper .admin .main .innerMain #slug {
+  display: none;
+}
+
+.adminWrapper .admin .main .innerMain h1 {
+  text-align: left;
+  color: #585858;
+  font-weight: 700;
+  margin: 10px 0 20px;
+  font-size: 44pt;
+  cursor: text;
+}
+
+.adminWrapper .admin .main .innerMain h1:empty::before {
+  content: attr(placeholder);
+  color: #e2e2e2;
+}
+
+.adminWrapper .admin .main .innerMain h1 * {
+  display: inline;
+}
+
+.adminWrapper .admin .main .innerMain h1 br {
+  display: none;
+}
+
+.adminWrapper .admin .main .innerMain .tags {
+  height: auto;
+  clear: both;
+  width: 100%;
+  display: block;
+  float: none;
+  overflow: hidden;
+  margin-bottom: 15px;
+}
+
+.adminWrapper .admin .main .innerMain .tags .tag {
+  width: auto;
+  background: #e6efff;
+  height: 44px;
+  float: left;
+  line-height: 44px;
+  padding: 0 0 0 12px;
+  margin: 0 10px 0 0;
+  border-radius: 5px;
+  border: 1px solid #d7e2ff;
+  margin-bottom: 5px;
+  color: #4f7ffe;
+}
+
+.adminWrapper .admin .main .innerMain .tags .tag .remove {
+  display: inline-block;
+  width: 28px;
+  height: 42px;
+  margin: 0px 0;
+  cursor: pointer;
+}
+
+.adminWrapper .admin .main .innerMain .tags .tag .remove * {
+  cursor: pointer;
+}
+
+.adminWrapper .admin .main .innerMain .tags .tag .remove svg {
+  width: 14px;
+  height: 14px;
+  stroke: #4f7ffe;
+  margin-bottom: 2px;
+}
+
+.adminWrapper .admin .main .innerMain .tags .addTag {
+  width: 44px;
+  background: #f5f6fa;
+  height: 44px;
+  float: left;
+  line-height: 44px;
+  margin: 0 10px 0 0;
+  border-radius: 5px;
+  border: 1px solid #efeef2;
+  color: #aeb1bb;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.2s all;
+}
+
+.adminWrapper .admin .main .innerMain .tags .addTag:hover {
+  background: #f0f2fb;
+}
+
+.adminWrapper .admin .main .innerMain .content {
+  min-height: 300px;
+  cursor: text;
+  white-space: pre-wrap;
+}
+
+.adminWrapper .admin .main .innerMain .content:empty::before {
+  content: attr(placeholder);
+  color: #e2e2e2;
+}
+
+.adminWrapper .admin .main .innerMain .content * {
+  cursor: text;
+}
+
+.adminWrapper .admin .main .innerMain .imageWrapper {
+  width: 200px;
+  overflow: hidden;
+  height: 200px;
+  position: relative;
+  border: 2px solid #f8f9fa;
+  margin-top: 20px;
+}
+
+.adminWrapper .admin .main .innerMain .imageWrapper .remove {
+  display: block;
+  width: 30px;
+  height: 30px;
+  background: #f7f7f7;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  border-radius: 50%;
+  z-index: 5;
+  cursor: pointer;
+}
+
+.adminWrapper .admin .main .innerMain .imageWrapper .remove * {
+  cursor: pointer;
+}
+
+.adminWrapper .admin .main .innerMain .imageWrapper .remove svg {
+  width: 20px;
+  height: 20px;
+  margin: 5px;
+  transition: 0.2s all;
+}
+
+.adminWrapper .admin .main .innerMain .imageWrapper .remove:hover svg {
+  stroke: #f44336;
+}
+
+.adminWrapper .admin .main .innerMain .imageWrapper span {
+  height: 200px;
+  width: 200px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  color: #ccc;
+}
+
+.adminWrapper .admin .main .innerMain .imageWrapper input {
+  width: 500%;
+  height: 500%;
+  position: absolute;
+  cursor: pointer;
+  opacity: 0;
+  top: -200%;
+  left: -200%;
+}
+
+.adminWrapper .admin .main .innerMain .imageWrapper img {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  background: white;
+}
+
+.adminWrapper .admin .main .innerMain button {
+  line-height: 40px;
+  height: 40px;
+  padding: 0 30px;
+  margin: 40px 0 0;
+  float: left;
+}
+
+.adminWrapper .admin .main .innerMain button:disabled {
+  background: #edecf1;
+  color: #9f9fa7;
+}
+
+::-webkit-scrollbar {
+  width: 17px;
+}
+
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 17px 17px rgba(0, 0, 0, 0.05);
+  border: 7px solid transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  box-shadow: inset 0 0 17px 17px #999;
+  border: 7px solid transparent;
+}
+
+
+
+--------{--(@  tick-server/public/assets/js/main.js  @)--}--------
+
+/* https://developer.mozilla.org/en-US/docs/Web/API/Window/confirm */
+
+$ = (q, e) => {
+  let i = typeof e === "number" ? e : undefined;
+  let o = typeof e === "object" ? e : undefined;
+  let r = o ? o.querySelectorAll(q) : document.querySelectorAll(q);
+  if(i!==undefined){
+      return r[i];
+  }else if(r.length===1){
+      return r[0];
+  }else{
+      return r;
+  }
+}
+
+//YouMightNotNeedjQuery
+HTMLElement.prototype.find = function(q){return $(q, this)};
+HTMLElement.prototype.hasClass = function(q){return this.classList ? this.classList.contains(q) : new RegExp('(^| )' + q + '( |$)', 'gi').test(this.q); }
+HTMLElement.prototype.addClass = function(q){return this.classList ? this.classList.add(q) : this.className += ' ' + q;}
+HTMLElement.prototype.removeClass = function(q){return this.classList ? this.classList.remove(q) : this.className = this.className.replace(new RegExp('(^|\\b)' + q.split(' ').join('|') + '(\\b|$)', 'gi'), ' '); }
+HTMLElement.prototype.toggleClass =  function(q){return this.hasClass(q) ? this.removeClass(q) : this.addClass(q); }
+HTMLElement.prototype.attr = function(q,s){return s!==undefined ? s===null ? this.removeAttribute(q) : this.setAttribute(q, s) : this.getAttribute(q); }
+HTMLElement.prototype.data = function(q,s){return this.attr("data-"+q,s); }
+HTMLElement.prototype.html = function(q){return this.innerHTML=q; }
+HTMLElement.prototype.forEach = function(q,s){return [this].forEach(q,s); }
+HTMLElement.prototype.append = function(q){return this.appendChild(q); }
+
+let tagTemplate = ['<div class="tag" name="','">',' <div class="remove"><svg role="img" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M6.34314575 6.34314575L17.6568542 17.6568542M6.34314575 17.6568542L17.6568542 6.34314575"></path></svg></div></div>'];
+let modalTagTemplate = ['<li class="active" name="','">','</li>']
+let monthArr = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+let changesMade = false;
+let oldCategories = {};
+
+//https://developer.mozilla.org/en-US/docs/Learn/HTML/Forms/Sending_forms_through_JavaScript
+function post(url, data, callback=()=>{}) {
+    if(!!localStorage.getItem("token")){
+        data.token = localStorage.getItem("token")
+    }
+    var XHR = new XMLHttpRequest();
+    XHR.addEventListener('load', function(event) {
+        callback(XHR.response);
+    });
+    XHR.open('POST', url);
+    XHR.setRequestHeader('Content-Type', 'application/json');
+    XHR.setRequestHeader("Authorization",localStorage.getItem("restKey"))
+    XHR.send(JSON.stringify(data));
+}
+
+function get(url, callback=()=>{}) {
+    var XHR = new XMLHttpRequest();
+    XHR.addEventListener('load', function(event) {
+        callback(XHR.response);
+    });
+    XHR.open('GET', url);
+    XHR.send();
+}
+
+sendMessage = (slug,title,cb) => {
+    post("https://onesignal.com/api/v1/notifications", {
+        "app_id": localStorage.getItem("appKey"),
+        "included_segments": ["All"],
+        "data": {slug, title },
+        "headings": {"en":"Yeni haber!"},
+        "contents": {"en": title}
+    }, cb)
+}
+
+logout = () => {
+    localStorage.setItem("token", "");
+    localStorage.setItem("appKey", "");
+    localStorage.setItem("restKey", "");
+    window.location = "/"
+}
+
+generateToken = () => {
+    let name = $("#name").value;
+    let pass = $("#pass").value;
+    let err = $("#err");
+    post("/login", {name, pass}, (res)=>{
+        res = JSON.parse(res);
+        if(res.token==="3e9ad32afd8070e5e59d6b4b005bfef9561890a3"){
+            err.innerText = "Giriş başarısız."
+        }else{
+            localStorage.setItem("token", res.token);
+            localStorage.setItem("appKey", res.appKey);
+            localStorage.setItem("restKey", res.restKey);
+            window.location = "/admin"
+        }
+    });
+}
+
+showModal = (id, extraClass) => {
+    $(id).addClass("active");
+    if(extraClass){
+        $(id).addClass(extraClass);
+    }
+}
+
+exitModal = (id, callback=()=>{}) => {
+    let n = isNaN($("#categoriesModal .inner ul li").length) ? 1 : $("#categoriesModal .inner ul li").length
+    $("#categoriesNumber").innerText = n;
+    $(id).attr("class", "modal");
+    callback();
+}
+
+addCategory = () => {
+    changesMade = true;
+    $("#tags").innerHTML = "";
+    $("#categoriesModal .inner ul li.active").forEach(el=>{
+        $("#tags").innerHTML += tagTemplate.join(el.innerText.trim().replace(/\,|\"|\'|\`/g, ''));
+    })
+    $("#tags").innerHTML += '<div class="addTag">+</div>';
+    addTagFunctionality();
+}
+
+addTagFunctionality = () => {
+    $("#tags .tag .remove").forEach(removeButton=>{
+        removeButton.addEventListener("click", function(){
+            let tag = removeButton.parentNode;
+            tag.parentNode.removeChild(tag);
+        });
+    })
+    $("#tags .addTag").addEventListener("click", function(){
+        $("#categoriesModal ul li").forEach(el=>{
+            el.removeClass("active");
+        })
+        $("#tags .tag").forEach(el=>{
+            $("#categoriesModal ul li[name='"+el.innerText.trim()+"']").forEach(li=>{
+                li.addClass("active");
+            })
+        })
+        showModal("#categoriesModal")
+    });
+}
+
+addLiFunctionality = () => {
+    $("#categoriesModal .inner ul li").forEach(el=>{
+        el.addEventListener("click", function(){
+            el.toggleClass("active");
+        });
+    })
+}
+
+addItemFunctionality = () => {
+    $(".item").forEach(el=>{
+        el.addEventListener("click", function(){
+            if(changesMade && !window.confirm("Yaptığınız değişiklikler kaybolabilir. Devam etmek istiyor musunuz?")) return false;
+            $(".item").forEach(el=>{
+                el.removeClass("active");
+            });
+            el.addClass("active");
+            $("#notifyPost").removeClass("active")
+            $(".secondLeftBar").removeClass("full");
+            $("#title").innerText = el.find(".name").innerText;
+            $("#content").innerText = el.find(".content .summary").innerHTML;
+            $("#slug").innerText = el.find(".content .slug").innerText;
+            $("#imagesrc").attr("src", el.find(".content .image").innerText);
+            /* https://www.unixtimestamp.com/index.php */
+            $("#date input").value = new Date(Number(el.find(".content .date").innerHTML)).toISOString().slice(0, -5);
+            let pTags = !!(el.find(".content .tags").innerHTML) ? (el.find(".content .tags").innerHTML).split(",").map(el=>{
+                return tagTemplate.join(el.trim());
+            }).join("") : "";
+            $("#tags").innerHTML = pTags + '<div class="addTag">+</div>';
+            changesMade = false;
+            $(".innerMain").scrollTo(0,0);
+            addTagFunctionality();
+        });
+    })
+}
+
+loadItems = (lastActive, isSearch) => {
+    let itemTemplate = ['<div class="item" slug="',
+    '"><div class="name">',
+    '</div><div class="content"><span class="summary">',
+    '</span><div class="date">',
+    '</div><div class="humanDate">',
+    '</div><div class="tags">',
+    '</div><div class="slug">',
+    '</div><div class="image">',
+    '</div></div></div>'];
+    get("/list", (response)=>{
+        $("#items").innerHTML = "";
+        let arr = JSON.parse(response);
+        let categories = {}
+
+        let v = $("#filter").hasClass("active");
+        arr.sort((a,b)=>{
+            return v ? b.date - a.date : a.date - b.date;
+        });
+
+        if(isSearch){
+            arr = arr.filter((a)=>{
+                return a.title.toLowerCase().indexOf($("#search").value.toLowerCase()) > -1;
+            });    
+        }
+
+        arr.map(el=>{
+            //console.log(el);
+            /* https://stackoverflow.com/questions/9229213/convert-iso-date-to-milliseconds-in-javascript */
+            /* https://www.toptal.com/software/definitive-guide-to-datetime-manipulation */
+            var myDate = new Date(el.date);
+            var offset = myDate.getTimezoneOffset() * 60 * 1000;
+            var dateString = myDate.getTime() - offset;
+            let currentDate = new Date(el.date);
+            var date = currentDate.getDate();
+            var month = currentDate.getMonth();
+            var year = currentDate.getFullYear();
+            var humanDate = date + " " + monthArr[month] + " " + year;
+            
+            el.category.map(cat=>{
+                categories[cat] = 1;
+            })
+
+            $("#items").innerHTML += 
+                itemTemplate[0] + el.slug +
+                itemTemplate[1] + el.title +
+                itemTemplate[2] + el.content +
+                itemTemplate[3] + dateString +
+                itemTemplate[4] + humanDate +
+                itemTemplate[5] + el.category.join(",") +
+                itemTemplate[6] + el.slug +
+                itemTemplate[7] + el.image +
+                itemTemplate[8]
+            ;
+        })
+
+        oldCategories = {...oldCategories, ...categories};
+
+        $("#categoriesModal .inner ul").innerHTML = Object.keys(oldCategories).map(cat=>modalTagTemplate.join(cat)).join("")
+
+        let n = isNaN($("#categoriesModal .inner ul li").length) ? 1 : $("#categoriesModal .inner ul li").length
+        $("#categoriesNumber").innerText = n;
+        let k = isNaN($("#items .item").length) ? 1 : $("#items .item").length
+        $("#postsNumber").innerText = k;
+
+        addItemFunctionality();
+        
+        if(lastActive){
+            console.log(lastActive);
+            $("#items .item[slug='"+lastActive+"']").click();
+        }
+
+        addLiFunctionality();
+    })
+}
+
+loginOnload = function() {
+    $("#name").addEventListener("keydown", function(){
+        $("#err").innerText = "";
+    })
+    $("#pass").addEventListener("keydown", function(event){
+        if (event.which == 13 || event.keyCode == 13) {
+            generateToken();
+            return false;
+        }
+        $("#err").innerText = "";
+    })
+};
+
+adminOnload = function() {
+    if(!localStorage.getItem("token")){
+        window.location = "/";
+    } else {
+        $("#newPost").addEventListener("click", function(){
+            if(changesMade && !window.confirm("Yaptığınız değişiklikler kaybolabilir. Devam etmek istiyor musunuz?")) return false;
+            $(".item").forEach(el=>{
+                el.removeClass("active");
+            })
+            var myDate = new Date();
+            var offset = myDate.getTimezoneOffset() * 60 * 1000;
+            var dateString = myDate.getTime() - offset;
+            $("#date input").value = new Date(dateString).toISOString().slice(0, -5);
+            $("#title").innerText = "";
+            $("#content").innerText = "";
+            $("#slug").innerText = "";
+            $("#tags").innerHTML = '<div class="addTag">+</div>';
+            $("#save").attr("disabled", true);
+            $(".secondLeftBar").removeClass("full");
+            $("#imagesrc").attr("src", "");
+            $("#image").value = '';
+            $("#title").focus();
+            changesMade = false;
+            addTagFunctionality();
+        })
+    
+        $("#addCircle").addEventListener("click", function(){
+            $("#newPost").click();
+        });
+        
+        $("#title").addEventListener("keyup", function(){
+            changesMade = true;
+            if($("#title").innerText){
+                $("#save").attr("disabled", null);
+            }else{
+                $("#save").attr("disabled", "true");
+            }
+        });
+    
+        $("#content").addEventListener("keyup", function(){
+            changesMade = true;
+        });
+    
+        $("#createCategory").addEventListener("click", function(){
+            let name = $("#categoriesModal #categoryName").value;
+            if($("#categoriesModal .inner ul li[name='"+name+"']").length===0){
+                let catName = name.trim().replace(/\,|\"|\'|\`/g, '');
+                $("#categoriesModal .inner ul").innerHTML = modalTagTemplate.join(catName) + $("#categoriesModal .inner ul").innerHTML;
+                oldCategories[catName] = 1;
+                addLiFunctionality();
+            }else{
+                $("#categoriesModal .inner ul li[name='"+name+"']").addClass("active");
+            }
+            $("#categoriesModal #categoryName").value = "";
+            $("#categoriesModal #categoryName").focus();
+        });
+    
+        $("#categoriesModal #categoryName").addEventListener("keydown", function(event){
+            if (event.which == 13 || event.keyCode == 13) {
+                $("#createCategory").click();
+                return false;
+            }
+        })
+    
+        $("#search").addEventListener("keydown", function(event){
+            if(changesMade && !window.confirm("Yaptığınız değişiklikler kaybolabilir. Devam etmek istiyor musunuz?")){
+                event.preventDefault();
+                return false;
+            }
+            $("#searchButton").click();
+        })
+    
+        $("#imageRemover").addEventListener("click", function(event){
+            $("#imagesrc").attr("src", "");
+            $("#image").value = '';
+            changesMade = true;
+        })
+    
+        $("#searchButton").addEventListener("click", function(event){
+            changesMade = false;
+            loadItems($(".item.active").length!==0 ? $(".item.active").attr("slug") : null, true);
+        })
+        
+        $("#save").addEventListener("click", function(){
+            let category = [];
+            $("#tags .tag").forEach(el=>{
+                category.push(el.attr("name"));
+            })
+            post("/admin/add/", {
+                title: $("#title").innerText,
+                content: $("#content").innerText,
+                category,
+                slug: $("#slug").innerText,
+                date: new Date($("#date input").value).getTime(),
+                image: $("#imagesrc").attr("src")
+            }, (res)=>{
+                changesMade = false;
+                loadItems($(".item.active").length!==0 ? $(".item.active").attr("slug") : res);
+            })
+        });
+    
+        /* https://coderwall.com/p/cjinag/upload-a-image-using-ajax-and-formdata */
+        $("#image").addEventListener("change", function(el){
+            file = el.target.files[0];
+            if (!file || !file.type.match(/image.*/)) return;
+            var fd = new FormData();
+            fd.append("file", file);
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/image", true);
+            xhr.onload = function(e) {
+                changesMade = true;
+                $("#imagesrc").attr("src", "/image/"+xhr.responseText)
+            }
+            xhr.send(fd);
+        });
+
+        $("#postFullDate").addEventListener("change", function(el){
+            changesMade = true;
+        });
+    
+        $("#removePost").addEventListener("click", function(){
+            let slug = $(".item.active").length!==0 ? $(".item.active").attr("slug") : null;
+            if(slug){
+                post("/admin/remove/", {
+                    slug
+                }, (res)=>{
+                    $(".secondLeftBar").addClass("full");
+                    loadItems();
+                })
+            }
+        });
+
+        $("#notifyPost").addEventListener("click", function(){
+            if(changesMade && !window.confirm("Yaptığınız değişiklikleri kaydetmediniz. Bildirimde yaptığınız değişiklikler gözükmeyecek. Devam etmek istiyor musunuz?")) return false;
+            let slug = $(".item.active").length!==0 ? $(".item.active").attr("slug") : null;
+            let title = $(".item.active").length!==0 ? $(".item.active").find(".name").innerText : null;
+            if(slug){
+                sendMessage(slug, title, (res)=>{
+                    $("#notifyPost").addClass("active");
+                })
+            }
+        });
+    
+        $("#filter").addEventListener("click", function(){
+            if(changesMade && !window.confirm("Yaptığınız değişiklikler kaybolabilir. Devam etmek istiyor musunuz?")) return false;
+            changesMade = false;
+            this.toggleClass("active");
+            let v = this.hasClass("active");
+            this.find("span").innerText = v ? "En yeni" : "En eski";
+            loadItems(isNaN($("#items .item.active").length) ? $("#items .item.active").attr("slug") : null);
+        });
+    
+        loadItems();
+    }
+};
+
+
+--------{--(@  tick-server/public/index.html  @)--}--------
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link rel="stylesheet" href="./assets/css/styles.css" />
+    <script src="./assets/js/main.js"></script>
+    <title>Tick Admin</title>
+  </head>
+  <body onload="loginOnload()">
+    <div class="loginWrapper">
+      <div class="login">
+        <h1>tick</h1>
+        <div class="inputWrapper">
+          <label for="name">Kullanıcı Adı</label>
+          <input type="text" id="name" autofocus />
+        </div>
+        <div class="inputWrapper">
+          <label for="pass">Şifre</label>
+          <input type="password" id="pass" />
+        </div>
+        <div class="err" id="err"></div>
+        <button onClick="generateToken()">
+          <svg
+            role="img"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+          >
+            <rect width="14" height="10" x="5" y="11"></rect>
+            <path
+              d="M12,3 L12,3 C14.7614237,3 17,5.23857625 17,8 L17,11 L7,11 L7,8 C7,5.23857625 9.23857625,3 12,3 Z"
+            ></path>
+            <circle cx="12" cy="16" r="1"></circle>
+          </svg>
+          Giriş Yap
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
+
+
+
+--------{--(@  tick-server/readme.MD  @)--}--------
+
+admin:ticket
+
+
+--------{--(@  tick-server/src/admin.js  @)--}--------
+
+add = (req, res) => {
+  let db = req.globalDatabase;
+  let { title, content, slug, category, image, token, date } = req.body;
+  let localDate = +new Date();
+
+  if (
+    token &&
+    db
+      .get("users")
+      .find({ token })
+      .value().token
+  ) {
+    if (
+      slug &&
+      db.get("posts")
+        .find({ slug })
+        .value()
+    ) {
+      console.log("slug yollandı ve var", slug);
+      db.get("posts")
+        .find({ slug })
+        .assign({ title, content, image, category, date })
+        .write();
+    } else {
+      console.log("yeni olusturuluyor");
+      db.get("posts")
+        .push({
+          slug: localDate.toString(),
+          title,
+          image,
+          content,
+          category,
+          date,
+          stats: {
+            like: 0,
+            dislike: 0,
+            views: 0
+          }
+        })
+        .write();
+    }
+
+    res.send(localDate.toString());
+  } else {
+    res.send("not authorized");
+  }
+};
+
+remove = (req, res) => {
+  let db = req.globalDatabase;
+  let { slug, token } = req.body;
+
+  if (
+    token &&
+    db
+      .get("users")
+      .find({ token })
+      .value().token
+  ) {
+    db.get("posts")
+      .remove({ slug })
+      .write();
+    res.send("success");
+  } else {
+    res.send("not authorized");
+  }
+};
+
+module.exports = {
+  admin: { add, remove }
+};
+
+
+
+--------{--(@  tick-server/src/category.js  @)--}--------
+
+category = (req, res) => {
+  let db = req.globalDatabase;
+  let { categoryid } = req.params;
+  res.send(db.get("posts").filter(el => el.category.indexOf(categoryid) > -1));
+};
+
+module.exports = {
+  category
+};
+
+
+
+--------{--(@  tick-server/src/error.js  @)--}--------
+
+error = (req, res) => {
+  res.status(404).send("error");
+};
+
+module.exports = {
+  error
+};
+
+
+
+--------{--(@  tick-server/src/image.js  @)--}--------
+
+const path = require("path");
+const fs = require("fs");
+
+// For security
+let items = fs.readdirSync(path.join(__dirname, "../images/"));
+
+get = (req, res) => {
+  let image = req.params.imageid;
+  if (items.indexOf(image + ".png") > -1) {
+    res.sendFile(path.join(__dirname, "../images/" + image + ".png"));
+  } else {
+    res.send("Image could not found.");
+  }
+};
+
+/* https://github.com/richardgirges/express-fileupload/tree/master/example#basic-file-upload */
+post = (req, res) => {
+  if (Object.keys(req.files).length == 0) {
+    return res.status(400).send("No files were uploaded.");
+  }
+  let date = +new Date();
+  req.files.file.mv(
+    path.join(__dirname, "../images/" + date + ".png"),
+    function(err) {
+      if (err) return res.status(500).send(err);
+
+      items = fs.readdirSync(path.join(__dirname, "../images/"));
+      res.send(date.toString());
+    }
+  );
+};
+
+module.exports = {
+  image: { get, post }
+};
+
+
+
+--------{--(@  tick-server/src/index.js  @)--}--------
+
+const { login } = require("./login");
+const { admin } = require("./admin");
+const { error } = require("./error");
+const { vote } = require("./vote");
+const { view } = require("./view");
+const { image } = require("./image");
+const { list } = require("./list");
+
+module.exports = {
+  login,
+  admin,
+  error,
+  vote,
+  view,
+  image,
+  list,
+  category
+};
+
+
+
+--------{--(@  tick-server/src/list.js  @)--}--------
+
+all = (req, res) => {
+  let db = req.globalDatabase;
+  res.send(db.get("posts"));
+};
+
+category = (req, res) => {
+  let db = req.globalDatabase;
+  let { categoryid } = req.params;
+  res.send(db.get("posts").filter(el => el.category.indexOf(categoryid) > -1));
+};
+
+module.exports = {
+  list: { all, category }
+};
+
+
+
+--------{--(@  tick-server/src/login.js  @)--}--------
+
+const sha1 = require("sha1");
+
+login = (req, res) => {
+  let db = req.globalDatabase;
+  let payload = req.body;
+  let token = sha1(payload.name + "4M5E4R0K4E5Z" + payload.pass);
+  let user = db
+    .get("users")
+    .find({ token })
+    .value();
+
+  let returnData = user
+    ? {
+        restKey: "Basic ZjdlMTIxNzctN2FkMS00ZGE5LTgzNDItNTEyY2Y0Njc4ZWY1",
+        appKey: "7d5f91ae-d848-475e-b3cc-470d3f2b9fcc",
+        token: user.token
+      }
+    : '{"restKey":"","appKey":"","token":"3e9ad32afd8070e5e59d6b4b005bfef9561890a3"}';
+
+  res.send(returnData);
+};
+
+module.exports = {
+  login
+};
+
+
+
+--------{--(@  tick-server/src/view.js  @)--}--------
+
+view = (req, res) => {
+  let db = req.globalDatabase;
+  let { slug } = req.params;
+  if (
+    slug &&
+    db
+      .get("posts")
+      .find({ slug })
+      .value()
+  ) {
+    db.get("posts")
+      .find({ slug })
+      .update("stats.views", n => n + 1)
+      .write();
+    res.send(
+      db
+        .get("posts")
+        .find({ slug })
+        .value()
+    );
+  } else {
+    res.send({
+      slug: "",
+      title: "",
+      image: "",
+      content: "",
+      category: [],
+      date: null,
+      stats: { like: 0, dislike: 0, views: 0 }
+    });
+  }
+};
+
+module.exports = {
+  view
+};
+
+
+
+--------{--(@  tick-server/src/vote.js  @)--}--------
+
+vote = (req, res) => {
+  let db = req.globalDatabase;
+  let { slug, userid, diff } = req.body;
+  diff = diff >= 1 ? 1 : diff <= -1 ? -1 : 0;
+
+  if (!userid) {
+    res.send("userid not defined");
+    return false;
+  }
+
+  if (!slug) {
+    res.send("slug not defined");
+    return false;
+  }
+
+  if (
+    !db
+      .get("posts")
+      .find({ slug })
+      .value()
+  ) {
+    res.send("no posts found by that slug");
+    return false;
+  }
+
+  //prepare post
+  if (
+    !db
+      .get("votes")
+      .find({ slug })
+      .value()
+  ) {
+    db.get("votes")
+      .push({ slug: slug, voteCount: 0, votes: [] })
+      .write();
+  }
+
+  let votes = db
+    .get("votes")
+    .find({ slug })
+    .get("votes")
+    .value();
+
+  let relativediff = diff;
+
+  if (
+    db
+      .get("votes")
+      .find({ slug })
+      .get("votes")
+      .find({ userid })
+      .value()
+  ) {
+    let indx = votes.findIndex(e => e.userid === userid);
+    let oldDif = votes[indx].diff;
+    relativediff -= oldDif;
+    votes[indx] = {
+      userid,
+      diff
+    };
+  } else {
+    votes.push({ userid, diff });
+  }
+
+  db.get("votes")
+    .find({ slug })
+    .assign({ votes })
+    .update("voteCount", n => n + relativediff)
+    .write();
+
+  let likeDiff =
+    (relativediff === -1 && diff === 0) || relativediff === -2
+      ? -1
+      : (relativediff === 1 && diff !== 0) || relativediff === +2
+      ? +1
+      : 0;
+  let dislikeDiff =
+    (relativediff === -1 && diff !== 0) || relativediff === -2
+      ? +1
+      : (relativediff === 1 && diff === 0) || relativediff === +2
+      ? -1
+      : 0;
+
+  db.get("posts")
+    .find({ slug })
+    .update("stats.like", n => n + likeDiff)
+    .update("stats.dislike", n => n + dislikeDiff)
+    .write();
+
+  res.send(
+    db
+      .get("posts")
+      .find({ slug })
+      .get("stats")
+      .value()
+  );
+};
+
+module.exports = {
+  vote
+};
+
+
+
